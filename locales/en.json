@@ -1,0 +1,57 @@
+{
+    "player_not_online": "Player not online?",
+    "not_enough_money": "You don't have enough money in your bank account!",
+    "please_wait": "Please wait!",
+    "no_player_nearby": "No player nearby!",
+    "error_fetch_playerdata": "Error fetching player data",
+    "notify_ok": "OK",
+
+    "party_invalid_id": "Invalid party id",
+    "party_enough_people": "Currently enough people are doing this job. Try again later.",
+    "party_already_hasjob": "Party already has a job",
+    "party_certain_mems_req": "Certain members of your party does not meet the requirements",
+    "party_nojobs_yet": "No jobs available yet!",
+    "party_already_inparty": "You are already in a party",
+    "party_name_taken": "Party name is already taken",
+    "party_created": "Party created",
+    "party_added_member": "%s added to party",
+    "party_not_inany_group": "You do not seem to be in any group",
+    "party_not_inany_group_error": "For some reason he does not seem to be in a group",
+    "party_leader_restricted": "This action is restricted to the party leader only",
+    "party_cannot_kickself": "You cannot kick yourself from the party",
+    "party_cannot_kick_jobactive": "You cannot kick someone out of the party while their job is active.",
+    "party_notify_title": "Party",
+    "party_notify_icon": "people-group",
+    "party_was_kicked": "%s was kicked from the party",
+    "party_was_kicked_inform": "Player was kicked from the party",
+    "party_was_notfound": "Player was not found in the party.",
+    "party_was_removed": "Player was removed from the party.",
+    "party_left_party": "%s left the party",
+    "party_leader_cannot_leave": "Party leader cannot leave the party. Please disband the party instead.",
+    "party_disband_byleader": "Party has been disbanded by the leader.",
+    "party_was_disband": "Party was disbanded.",
+    "party_cannot_leave_ontask": "You cannot leave this party while the task is in progress.",
+    "party_does_not_exist": "Party does not exist.",
+    "party_mem_wants_join_title": "Party request",
+    "party_mem_wants_join_description": "%s wants to join your party",
+    "party_mem_req_declined": "Request was declined.",
+
+    "ui": {
+        "prompt": {
+            "system": "System",
+            "is_required": "is required.",
+            "cancel_button": "CANCEL",
+            "confirm_button": "CONFIRM"
+        },
+        "party": {
+            "app_name": "Party",
+            "modal_party_name": "Party Name",
+            "create_button": "CREATE",
+            "joining_party": "Joining party...",
+            "empty_party": "No parties discovered.",
+            "members_title": "Members",
+            "tasks_title": "Tasks",
+            "tasks_empty": "No tasks found."
+        }
+    }
+}

@@ -1,0 +1,21 @@
+---@class Notify
+---@field public icon string icon
+---@field public title string title
+---@field public description string description
+---@field public duration? number duration
+
+---@class GroupBlipData
+---@field entity? number Entity handle
+---@field netId? number Network ID of an entity
+---@field radius? number Radius for radius blips
+---@field coords? vector3 Coordinates for the blip
+---@field color? number Blip color (defaults to 1)
+---@field alpha? number Blip alpha/transparency (defaults to 255)
+---@field sprite? number Blip sprite/icon (defaults to 1)
+---@field scale? number Blip scale/size (defaults to 0.7)
+---@field label? string Blip label text (defaults to "NO LABEL FOUND")
+---@field route? boolean Whether to set a route to this blip
+---@field routeColor? number Color of the route line (defaults to blip color)
+---@field display? number Display type of the blip (defaults to 4)
+---@field category? number Category of the blip (defaults to 1)
+---@field shortRange? boolean Whether the blip should only be visible at short range (defaults to true)
