@@ -23,7 +23,7 @@ local function updatePartyData(members, action, tasks)
         if player then
             local data = {app = 'party', action = action, data = parties}
             if action == 'refreshTasksDetail' then data.tasks = tasks end
-            TriggerClientEvent('phone:client:updatePhoneData', player.source, data)
+            TriggerClientEvent('bs_groupsystem:client:updatePhoneData', player.source, data)
         end
     end
 end
@@ -67,7 +67,7 @@ local function sendPartyNotification(partyId, data)
     for _, member in pairs(party.members) do
         local player = Players:get(member.citizenid)
         if player then
-            TriggerClientEvent('phone:client:notification', player.source, data)
+            TriggerClientEvent('bs_groupsystem:client:notification', player.source, data)
         end
     end
     return {status = true}
@@ -226,7 +226,7 @@ end exports('sendToPartyMembers', sendToPartyMembers)
 local function createPartyBlip(partyId, blipName, blipData)
     sendToPartyMembers(partyId, function(playerId)
         if playerId then
-            TriggerClientEvent('phone:client:party:createBlip', playerId, blipName, blipData)
+            TriggerClientEvent('bs_groupsystem:client:party:createBlip', playerId, blipName, blipData)
         end
     end)
 end exports('createPartyBlip', createPartyBlip)
@@ -237,7 +237,7 @@ end exports('createPartyBlip', createPartyBlip)
 local function removePartyBlip(partyId, blipName)
     sendToPartyMembers(partyId, function(playerId)
         if playerId then
-            TriggerClientEvent('phone:client:party:removeBlip', playerId, blipName)
+            TriggerClientEvent('bs_groupsystem:client:party:removeBlip', playerId, blipName)
         end
     end)
 end exports('removePartyBlip', removePartyBlip)
@@ -247,7 +247,7 @@ end exports('removePartyBlip', removePartyBlip)
 local function removeAllPartyBlips(partyId)
     sendToPartyMembers(partyId, function(playerId)
         if playerId then
-            TriggerClientEvent('phone:client:party:removeAllBlips', playerId)
+            TriggerClientEvent('bs_groupsystem:client:party:removeAllBlips', playerId)
         end
     end)
 end exports('removeAllPartyBlips', removeAllPartyBlips)
@@ -264,12 +264,12 @@ local function updatePartyTasks(partyId, tasks)
 
     ---Handler for the jobs so that the last updated time of the task gets updated.
     -- Note: Not sure why was this there
-    -- TriggerEvent('phone:server:taskUpdated', -1, {currentJob = party.currentJob, partyId = partyId, updatedTime = os.time()})
+    -- TriggerEvent('bs_groupsystem:server:taskUpdated', -1, {currentJob = party.currentJob, partyId = partyId, updatedTime = os.time()})
 
     ---This refreshes the party status for other people as well.
     ---This is needed because the party status is not updated for players that are not inside the party.
     ---For example to toggle the join party button.
-    TriggerClientEvent('phone:client:updatePhoneData', -1, {app = 'party', action = 'refreshParties', data = parties})
+    TriggerClientEvent('bs_groupsystem:client:updatePhoneData', -1, {app = 'party', action = 'refreshParties', data = parties})
     return {status = true}
 end exports('updatePartyTasks', updatePartyTasks)
 
@@ -277,7 +277,7 @@ end exports('updatePartyTasks', updatePartyTasks)
 ---@param source number Source of the player.
 ---@param partyName string Name of the party.
 ---@return table result Result table. This table will contain the status, msg.
-local function createParty(source, partyName)
+local function createParty(source, partyName, maxMembers, joinType)
     if partyCreationTime > os.time() then return {status = false, msg = locale('party_nojobs_yet')} end
     local player = Players:get(source)
     if not player then return {status = false, msg = locale('player_not_online')} end
@@ -290,14 +290,17 @@ local function createParty(source, partyName)
         members = {{citizenid = leader, name = player.name}},
         leader = leader,
         name = partyName,
+        maxMembers = maxMembers or 6,
+        joinType = joinType or 'Request to Join',
         icon = 'fa-solid fa-people-group',
         currentJob = false,
         partyType = 'legal',
-        partyTasks = {}
+        partyTasks = {},
+        requests = {}
     }
     Player(source).state:set('partyData', {inParty = true, currentJob = false}, true)
     SendLog(source, 'party', 'partyCreated', json.encode(parties[partyId]))
-    TriggerClientEvent('phone:client:updatePhoneData', -1, {app = 'party', action = 'refreshParties', data = parties})
+    TriggerClientEvent('bs_groupsystem:client:updatePhoneData', -1, {app = 'party', action = 'refreshParties', data = parties})
     return {status = true, msg = locale('party_created')}
 end exports('createParty', createParty)
 
@@ -350,9 +353,9 @@ local function kickPlayerFromParty(partyId, citizenid, sourceCitizenId)
             table.remove(party.members, _)
             if player then
                 local source = player.source
-                TriggerClientEvent('phone:client:updatePhoneData', source, {app = 'party', action = 'backToParties', data = parties})
+                TriggerClientEvent('bs_groupsystem:client:updatePhoneData', source, {app = 'party', action = 'backToParties', data = parties})
                 Player(source).state:set('partyData', {inParty = false, currentJob = false}, true)
-                TriggerEvent('phone:server:leftParty', source, { partyId = partyId, currentJob = party.currentJob })
+                TriggerEvent('bs_groupsystem:server:leftParty', source, { partyId = partyId, currentJob = party.currentJob })
             end
             updatePartyData(party.members, 'refreshTasksDetail', party.partyTasks)
             return {status = true, msg = locale('party_was_kicked_inform')}
@@ -376,9 +379,9 @@ local function removePlayerFromParty(partyId, citizenid)
             table.remove(party.members, _)
             if player then
                 local source = player.source
-                TriggerClientEvent('phone:client:updatePhoneData', source, {app = 'party', action = 'backToParties', data = parties})
+                TriggerClientEvent('bs_groupsystem:client:updatePhoneData', source, {app = 'party', action = 'backToParties', data = parties})
                 Player(source).state:set('partyData', {inParty = false, currentJob = false}, true)
-                TriggerEvent('phone:server:leftParty', player.source, { partyId = partyId, currentJob = party.currentJob })
+                TriggerEvent('bs_groupsystem:server:leftParty', player.source, { partyId = partyId, currentJob = party.currentJob })
             end
             updatePartyData(party.members, 'refreshTasksDetail', party.partyTasks)
             return {status = true, msg = locale('party_was_removed')}
@@ -401,14 +404,14 @@ local function disbandParty(src, partyId, sourceCitizenId)
         if player then
             local source = player.source
             Player(source).state:set('partyData', {inParty = false, currentJob = false}, true)
-            TriggerEvent('phone:server:leftParty', source, { partyId = partyId, currentJob = party.currentJob })
+            TriggerEvent('bs_groupsystem:server:leftParty', source, { partyId = partyId, currentJob = party.currentJob })
         end
     end
     updatePartyData(party.members, 'backToParties')
     SendLog(src, 'party', 'partyDisbanned', json.encode(party))
     parties[partyId] = nil
-    TriggerClientEvent('phone:client:updatePhoneData', -1, {app = 'party', action = 'refreshParties', data = parties})
-    if src then TriggerEvent('phone:server:disbandParty', src, partyId) end
+    TriggerClientEvent('bs_groupsystem:client:updatePhoneData', -1, {app = 'party', action = 'refreshParties', data = parties})
+    if src then TriggerEvent('bs_groupsystem:server:disbandParty', src, partyId) end
     return {status = true, msg = locale('party_was_disband')}
 end exports('disbandParty', disbandParty)
 
@@ -446,7 +449,7 @@ local function timedOutPlayer(citizenid)
     else removePlayerFromParty(partyId, citizenid) SendLog(nil, 'party', 'partyTimedOut', citizenid..' was timedout and was removed from party') end
 end
 
-RegisterNetEvent('phone:server:leaveParty', function()
+RegisterNetEvent('bs_groupsystem:server:leaveParty', function()
     local src = source
     local player = Players:get(src)
     if not player then return end
@@ -454,13 +457,13 @@ RegisterNetEvent('phone:server:leaveParty', function()
     local partyId = getPlayerPartyId(citizenid)
     if not partyId then return end
     if not Config.AllowLeavePartyDuringJob and getPartyJob(partyId) then
-        return TriggerClientEvent('phone:client:notification', src, {icon = locale('party_notify_icon'), title = locale('party_notify_title'), description = locale('party_cannot_leave_ontask')})
+        return TriggerClientEvent('bs_groupsystem:client:notification', src, {icon = locale('party_notify_icon'), title = locale('party_notify_title'), description = locale('party_cannot_leave_ontask')})
     end
     local result = removePlayerFromParty(partyId, citizenid)
-    if not result.status then TriggerClientEvent('phone:client:notification', src, {icon = locale('party_notify_icon'), title = locale('party_notify_title'), description = result.msg}) end
+    if not result.status then TriggerClientEvent('bs_groupsystem:client:notification', src, {icon = locale('party_notify_icon'), title = locale('party_notify_title'), description = result.msg}) end
 end)
 
-RegisterNetEvent('phone:server:kickMember', function(data)
+RegisterNetEvent('bs_groupsystem:server:kickMember', function(data)
     local src = source
     local player = Players:get(src)
     if not player then return end
@@ -469,10 +472,10 @@ RegisterNetEvent('phone:server:kickMember', function(data)
     if not partyId then return end
     local sourceCitizenId = player.citizenid
     local result = kickPlayerFromParty(partyId, targetCitizenid, sourceCitizenId)
-    if not result.status then TriggerClientEvent('phone:client:notification', src, {icon = locale('party_notify_icon'), title = locale('party_notify_title'), description = result.msg}) end
+    if not result.status then TriggerClientEvent('bs_groupsystem:client:notification', src, {icon = locale('party_notify_icon'), title = locale('party_notify_title'), description = result.msg}) end
 end)
 
-RegisterNetEvent('phone:server:requestDisbandParty', function()
+RegisterNetEvent('bs_groupsystem:server:requestDisbandParty', function()
     local src = source
     local player = Players:get(src)
     if not player then return end
@@ -480,17 +483,17 @@ RegisterNetEvent('phone:server:requestDisbandParty', function()
     local partyId = getPlayerPartyId(citizenid)
     if not partyId then return end
     local result = disbandParty(src, partyId, citizenid)
-    if not result.status then TriggerClientEvent('phone:client:notification', src, {icon = locale('party_notify_icon'), title = locale('party_notify_title'), description = result.msg}) end
+    if not result.status then TriggerClientEvent('bs_groupsystem:client:notification', src, {icon = locale('party_notify_icon'), title = locale('party_notify_title'), description = result.msg}) end
 end)
 
-RegisterNetEvent('phone:server:initialised', function(player)
+RegisterNetEvent('bs_groupsystem:server:initialised', function(player)
     local src = player.source
     local citizenid = player.citizenid
     local partyId = getPlayerPartyId(citizenid)
     if not partyId then return end
     local dataToSet = {inParty = true, currentJob = parties[partyId].currentJob or false}
     Player(src).state:set('partyData', dataToSet, true)
-    TriggerEvent('phone:server:resumePendingJobs', src, { citizenid = citizenid, partyId = partyId, currentJob = dataToSet.currentJob })
+    TriggerEvent('bs_groupsystem:server:resumePendingJobs', src, { citizenid = citizenid, partyId = partyId, currentJob = dataToSet.currentJob })
     SendLog(src, 'party', 'partyResumed', json.encode(parties[partyId]))
 end)
 
@@ -506,13 +509,13 @@ AddEventHandler('playerDropped', function()
     end)
 end)
 
-lib.callback.register('phone:server:createParty', function(source, data)
+lib.callback.register('bs_groupsystem:server:createParty', function(source, data)
     local src = source
-    local result = createParty(src, data.partyName)
+    local result = createParty(src, data.partyName, data.maxMembers, data.joinType)
     return result
 end)
 
-lib.callback.register('phone:server:requestJoinGroup', function(source, data)
+lib.callback.register('bs_groupsystem:server:requestJoinGroup', function(source, data)
     local src = source
     local player = Players:get(src)
     if not player then return {status = false, msg = locale('player_not_online')} end
@@ -524,13 +527,27 @@ lib.callback.register('phone:server:requestJoinGroup', function(source, data)
     local dataToSend = {icon = locale('party_notify_icon'), description = locale('party_mem_wants_join_description', name), title = locale('party_mem_wants_join_title')}
     local leader = getPartyLeader(data.partyId)
     if not leader then return {status = false, msg = locale('player_not_online')} end
+
+    local party = parties[data.partyId]
+    if party then
+        party.requests = party.requests or {}
+        local alreadyRequested = false
+        for _, req in ipairs(party.requests) do
+            if req.id == citizenid then alreadyRequested = true break end
+        end
+        if not alreadyRequested then
+            table.insert(party.requests, {id = citizenid, name = name})
+            updatePartyData(party.members, 'refreshParties')
+        end
+    end
+
     local leaderSrc = Players:get(leader)?.source
-    local response = lib.callback.await('phone:client:receiveConfirmationPopup', leaderSrc, dataToSend)
+    local response = lib.callback.await('bs_groupsystem:client:receiveConfirmationPopup', leaderSrc, dataToSend)
     if response then
         if response.status then
             local result = addPlayerToParty(data.partyId, citizenid, name)
             if result.status then
-                TriggerClientEvent('phone:client:updatePhoneData', src, {app = 'party', action = 'joinParty', partyId = data.partyId})
+                TriggerClientEvent('bs_groupsystem:client:updatePhoneData', src, {app = 'party', action = 'joinParty', partyId = data.partyId})
             end
             return {status = result.status, msg = result.msg}
         else
@@ -541,6 +558,62 @@ lib.callback.register('phone:server:requestJoinGroup', function(source, data)
     end
 end)
 
-lib.callback.register('phone:server:retrieveParties', function(_)
+lib.callback.register('bs_groupsystem:server:retrieveParties', function(_)
     return parties
+end)
+
+lib.callback.register('bsgroup:nui:server:fetchSingleGroup', function(source, groupId)
+    local party = parties[tonumber(groupId)]
+    if not party then return { status = false } end
+
+    return { status = true, group = party }
+end)
+
+lib.callback.register('bsgroup:nui:server:getPlayerData', function(source)
+    local player = Players:get(source)
+    if not player then return nil end
+
+    return {
+        citizenid = player.citizenid,
+        name = player.name,
+        source = source
+    }
+end)
+
+lib.callback.register('bsgroup:nui:server:promoteLeader', function(source, data)
+    local partyId = tonumber(data.groupId)
+    local party = parties[partyId]
+    if not party then return nil end
+
+    party.leader = data.newLeaderId
+
+    updatePartyData(party.members, 'refreshParties')
+
+    return party
+end)
+
+lib.callback.register('bsgroup:nui:server:processRequest', function(source, data)
+    local partyId = tonumber(data.groupId)
+    local party = parties[partyId]
+    if not party then return { status = false, msg = "Group not found" } end
+
+    if party.requests then
+        for i, req in ipairs(party.requests) do
+            if req.id == data.requestId then
+                table.remove(party.requests, i)
+                break
+            end
+        end
+    end
+
+    if data.action == 'accept' then
+        local result = addPlayerToParty(partyId, data.requestId, data.requestName)
+        if result.status then
+            updatePartyData(party.members, 'refreshParties')
+        end
+        return { status = result.status, msg = result.msg, group = party }
+    end
+
+    updatePartyData(party.members, 'refreshParties')
+    return { status = true, msg = "Request declined", group = party }
 end)

@@ -27,12 +27,19 @@ const Toggle: React.FC<{ label: string; checked: boolean; onChange: () => void; 
 );
 
 export const SettingsTab: React.FC = () => {
-    const [notifications, setNotifications] = useState(true);
-    const [sounds, setSounds] = useState(true);
-    const [publicProfile, setPublicProfile] = useState(true);
-    const [doNotDisturb, setDoNotDisturb] = useState(false);
-    const [autoAccept, setAutoAccept] = useState(false);
-    const [activityStatus, setActivityStatus] = useState(true);
+    const [notifications, setNotifications] = useState(() => JSON.parse(localStorage.getItem('bsgroup_notifications') ?? 'true'));
+    const [sounds, setSounds] = useState(() => JSON.parse(localStorage.getItem('bsgroup_sounds') ?? 'true'));
+    const [publicProfile, setPublicProfile] = useState(() => JSON.parse(localStorage.getItem('bsgroup_publicProfile') ?? 'true'));
+    const [doNotDisturb, setDoNotDisturb] = useState(() => JSON.parse(localStorage.getItem('bsgroup_doNotDisturb') ?? 'false'));
+    const [activityStatus, setActivityStatus] = useState(() => JSON.parse(localStorage.getItem('bsgroup_activityStatus') ?? 'true'));
+
+    React.useEffect(() => {
+        localStorage.setItem('bsgroup_notifications', JSON.stringify(notifications));
+        localStorage.setItem('bsgroup_sounds', JSON.stringify(sounds));
+        localStorage.setItem('bsgroup_publicProfile', JSON.stringify(publicProfile));
+        localStorage.setItem('bsgroup_doNotDisturb', JSON.stringify(doNotDisturb));
+        localStorage.setItem('bsgroup_activityStatus', JSON.stringify(activityStatus));
+    }, [notifications, sounds, publicProfile, doNotDisturb, activityStatus]);
 
     return (
         <div className="space-y-6 max-w-3xl mx-auto py-2">

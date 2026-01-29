@@ -9,6 +9,7 @@ import GroupDetails from './Details';
 import { CreateGroupModal } from './Modals';
 import { SettingsTab } from './SettingsTab';
 import { useNotifications } from '../misc/Notification';
+import { transformParties } from '../../utils/groupUtils';
 
 const MotionDiv = motion.div;
 
@@ -130,6 +131,7 @@ const Groups = () => {
     const [activeTab, setActiveTab] = useState<TabId>('dashboard');
     
     const { addNotification } = useNotifications();
+    const [citizenId, setCitizenId] = useState<string | null>(null);
 
     const tabs = [
         { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -138,10 +140,22 @@ const Groups = () => {
     ];
 
     const fetchGroupsData = async () => {
-        const response = await fetchNui<{ status: boolean, groups: Group[], myGroup: Group | null }>("fetchGroups", {});
+        let currentCitizenId = citizenId;
+        if (!currentCitizenId) {
+            const playerData = await fetchNui<{ citizenid: string }>("bsgroup:nui:getPlayerData", {});
+            if (playerData?.citizenid) {
+                currentCitizenId = playerData.citizenid;
+                setCitizenId(currentCitizenId);
+            }
+        }
+
+        if (!currentCitizenId) return;
+
+        const response = await fetchNui<{ status: boolean, data: { parties: any, canSeeIllegalParties: boolean } }>("bsgroup:nui:fetchParties", {});
         if (response?.status) {
-            setPublicGroups(response.groups);
-            setMyGroup(response.myGroup);
+            const { groups, myGroup } = transformParties(response.data.parties, currentCitizenId, response.data.canSeeIllegalParties);
+            setPublicGroups(groups);
+            setMyGroup(myGroup);
         }
     };
 
@@ -150,32 +164,61 @@ const Groups = () => {
         fetchGroupsData().finally(() => setTimeout(() => setIsLoading(false), 800));
     }, []);
 
-    useNuiEvent<any>('refreshGroup', (data) => {
-        if (selectedGroup && data.groupId === selectedGroup.id) {
-            fetchNui<any>("fetchSingleGroup", { groupId: selectedGroup.id }).then(res => {
-                if (res?.status) setSelectedGroup(res.group);
-            });
-        }
-        if (myGroup && data.groupId === myGroup.id) {
+    useNuiEvent<any>('refreshParties', (response) => {
+        if (citizenId) {
+            const { groups, myGroup } = transformParties(response.data, citizenId, response.canSeeIllegalParties);
+            setPublicGroups(groups);
+            setMyGroup(myGroup);
+        } else {
             fetchGroupsData();
         }
     });
 
+    useNuiEvent<any>('refreshTasksDetail', (response) => {
+        if (citizenId) {
+            const { groups, myGroup } = transformParties(response.data, citizenId, response.canSeeIllegalParties);
+            setPublicGroups(groups);
+            setMyGroup(myGroup);
+        } else {
+            fetchGroupsData();
+        }
+    });
+
+    useNuiEvent<any>('backToParties', (response) => {
+        if (citizenId) {
+            const { groups, myGroup } = transformParties(response.data, citizenId, response.canSeeIllegalParties);
+            setPublicGroups(groups);
+            setMyGroup(myGroup);
+            if (!myGroup) setSelectedGroup(null);
+        } else {
+            fetchGroupsData();
+            setSelectedGroup(null);
+        }
+    });
+
     const handleCreateGroup = async (data: { name: string; joinType: Group['joinType']; maxMembers: number; }) => {
-        const response = await fetchNui<{ status: boolean }>("createGroup", data);
+        const response = await fetchNui<{ status: boolean, msg: string }>("bsgroup:nui:createParty", { 
+            partyName: data.name,
+            maxMembers: data.maxMembers,
+            joinType: data.joinType
+        });
         if (response?.status) {
             fetchGroupsData();
             setCreateModalOpen(false);
-            setActiveTab('dashboard'); // Switch to dashboard to see new group
-            addNotification('success', 'Group Established', `Successfully created ${data.name}. You are now the leader.`);
+            setActiveTab('dashboard');
+            addNotification('success', 'Group Established', `Successfully created ${data.name}.`);
+        } else {
+            addNotification('error', 'Failed', response?.msg || 'Could not create group.');
         }
     };
 
     const handleRequestToJoin = async (groupId: string) => {
-        const response = await fetchNui<{ status: boolean }>("requestToJoin", { groupId });
+        const response = await fetchNui<{ status: boolean, msg: string }>("bsgroup:nui:requestJoinParty", { partyId: groupId });
         if (response?.status) {
             setSentRequests(prev => new Set(prev).add(groupId));
             addNotification('info', 'Application Sent', 'Your request to join has been submitted.');
+        } else {
+            addNotification('error', 'Request Failed', response?.msg || 'Could not send request.');
         }
     };
 
@@ -189,8 +232,8 @@ const Groups = () => {
         const isLeader = selectedGroup.isLeader;
         const groupName = selectedGroup.name;
         
-        const eventName = isLeader ? "disbandGroup" : "kartik-groups:client:leaveGroup";
-        const response = await fetchNui<{ status: boolean }>(eventName, { groupId: selectedGroup.id });
+        const eventName = isLeader ? "bsgroup:nui:disbandParty" : "bsgroup:nui:leaveParty";
+        const response = await fetchNui<{ status: boolean }>(eventName, { partyId: selectedGroup.id });
         if (response?.status) {
             setSelectedGroup(null);
             fetchGroupsData();
@@ -209,7 +252,7 @@ const Groups = () => {
             <AnimatePresence mode="wait">
                 {selectedGroup ? (
                     <MotionDiv key="details" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.2 }} className="h-full">
-                        <GroupDetails group={selectedGroup} onBack={() => setSelectedGroup(null)} onUpdateGroup={handleUpdateGroup} onDisbandOrLeave={handleDisbandOrLeave} />
+                        <GroupDetails group={selectedGroup} onBack={() => setSelectedGroup(null)} onUpdateGroup={handleUpdateGroup} onDisbandOrLeave={handleDisbandOrLeave} citizenId={citizenId} />
                     </MotionDiv>
                 ) : (
                     <MotionDiv key="tabs-view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col h-full p-6">
@@ -246,6 +289,7 @@ const Groups = () => {
                                         <DashboardView 
                                             myGroup={myGroup} 
                                             allGroups={publicGroups}
+                                            isInGroup={!!myGroup}
                                             onSelectGroup={setSelectedGroup} 
                                             onOpenCreateModal={() => setCreateModalOpen(true)}
                                             onRequestToJoin={handleRequestToJoin}
@@ -255,7 +299,13 @@ const Groups = () => {
                                 )}
                                 {activeTab === 'groups' && (
                                     <MotionDiv key="groups" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.2 }} className="h-full">
-                                        <GroupsView allGroups={publicGroups} onRequestToJoin={handleRequestToJoin} sentRequests={sentRequests} onOpenCreateModal={() => setCreateModalOpen(true)} />
+                                        <GroupsView 
+                                            allGroups={publicGroups} 
+                                            isInGroup={!!myGroup}
+                                            onRequestToJoin={handleRequestToJoin} 
+                                            sentRequests={sentRequests} 
+                                            onOpenCreateModal={() => setCreateModalOpen(true)} 
+                                        />
                                     </MotionDiv>
                                 )}
                                 {activeTab === 'settings' && (

@@ -14,14 +14,14 @@ RegisterNetEvent('esx:playerLoaded', function(_, xPlayer, _)
         name = xPlayer.name
     }
     Players:set(source, _data)
-    TriggerEvent('phone:server:initialised', _data)
+    TriggerEvent('bs_groupsystem:server:initialised', _data)
 end)
 
 RegisterNetEvent('esx:playerDropped', function(playerId, _)
     local player = Players:get(playerId)
     if player then
         Players:clear(playerId)
-        TriggerEvent('phone:server:terminated', player)
+        TriggerEvent('bs_groupsystem:server:terminated', player)
     end
 end)
 
@@ -38,7 +38,7 @@ AddEventHandler('onResourceStart', function(resourceName)
                 name = xPlayer.name
             }
             Players:set(source, _data)
-            TriggerEvent('phone:server:initialised', _data)
+            TriggerEvent('bs_groupsystem:server:initialised', _data)
         end
 	end
 end)

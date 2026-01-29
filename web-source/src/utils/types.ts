@@ -31,6 +31,7 @@ export interface GroupTask {
   id: number;
   title: string;
   completed: boolean;
+  status: 'pending' | 'current' | 'done';
 }
 
 export interface Group {

@@ -30,9 +30,10 @@ export const MyGroupCard: React.FC<{ group: Group, onSelectGroup: (group: Group)
     );
 };
 
-export const PublicGroupCard: React.FC<{ group: Group, onRequestToJoin: (groupId: string) => void, hasSentRequest: boolean }> = ({ group, onRequestToJoin, hasSentRequest }) => {
+export const PublicGroupCard: React.FC<{ group: Group, onRequestToJoin: (groupId: string) => void, hasSentRequest: boolean, isInGroup?: boolean }> = ({ group, onRequestToJoin, hasSentRequest, isInGroup }) => {
     const isFull = group.members.length >= group.maxMembers;
     const buttonState = useMemo(() => {
+        if (isInGroup) return { text: "Already in Group", disabled: true, style: "bg-secondary text-muted-foreground cursor-not-allowed opacity-70" };
         if (isFull) return { text: "Group is Full", disabled: true, style: "bg-yellow-500/20 text-yellow-300 cursor-not-allowed" };
         if (hasSentRequest) return { text: "Request Sent", disabled: true, style: "bg-blue-500/20 text-blue-300 cursor-not-allowed" };
         

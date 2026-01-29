@@ -10,11 +10,12 @@ const MotionButton = motion.button;
 export const DashboardView: React.FC<{ 
     myGroup: Group | null, 
     allGroups: Group[], 
+    isInGroup: boolean,
     onSelectGroup: (group: Group) => void, 
     onOpenCreateModal: () => void,
     onRequestToJoin: (groupId: string) => void,
     sentRequests: Set<string>
-}> = ({ myGroup, allGroups, onSelectGroup, onOpenCreateModal, onRequestToJoin, sentRequests }) => {
+}> = ({ myGroup, allGroups, isInGroup, onSelectGroup, onOpenCreateModal, onRequestToJoin, sentRequests }) => {
     
     // Derived Stats
     const tasksTotal = myGroup?.partyTasks.length || 0;
@@ -173,7 +174,13 @@ export const DashboardView: React.FC<{
                              </div>
                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                  {featuredGroups.map(group => (
-                                     <PublicGroupCard key={group.id} group={group} onRequestToJoin={onRequestToJoin} hasSentRequest={sentRequests.has(group.id)} />
+                                     <PublicGroupCard 
+                                        key={group.id} 
+                                        group={group} 
+                                        isInGroup={isInGroup}
+                                        onRequestToJoin={onRequestToJoin} 
+                                        hasSentRequest={sentRequests.has(group.id)} 
+                                     />
                                  ))}
                              </div>
                          </div>
@@ -184,7 +191,13 @@ export const DashboardView: React.FC<{
     );
 };
 
-export const GroupsView: React.FC<{ allGroups: Group[], onRequestToJoin: (groupId: string) => void, sentRequests: Set<string>, onOpenCreateModal: () => void }> = ({ allGroups, onRequestToJoin, sentRequests, onOpenCreateModal }) => {
+export const GroupsView: React.FC<{ 
+    allGroups: Group[], 
+    isInGroup: boolean,
+    onRequestToJoin: (groupId: string) => void, 
+    sentRequests: Set<string>, 
+    onOpenCreateModal: () => void 
+}> = ({ allGroups, isInGroup, onRequestToJoin, sentRequests, onOpenCreateModal }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [showOpenOnly, setShowOpenOnly] = useState(false);
     const [statusFilter, setStatusFilter] = useState<'all' | 'Recruiting' | 'Active' | 'Full'>('all');

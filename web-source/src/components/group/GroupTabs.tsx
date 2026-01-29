@@ -5,20 +5,24 @@ import { fetchNui } from '../../utils/fetchNui';
 import { Group, Member, GroupTask } from '../../utils/types';
 import { ConfirmationModal } from './Modals';
 import { useNotifications } from '../misc/Notification';
+import { transformSingleGroup } from '../../utils/groupUtils';
 
 const MotionDiv = motion.div;
 const MotionLi = motion.li;
 
-export const MembersTab: React.FC<{ group: Group; onUpdateGroup: (group: Group) => void; }> = ({ group, onUpdateGroup }) => {
+export const MembersTab: React.FC<{ group: Group; onUpdateGroup: (group: Group) => void; citizenId: string | null; }> = ({ group, onUpdateGroup, citizenId }) => {
     const [menuOpenFor, setMenuOpenFor] = useState<number | null>(null);
     const [kickConfirmFor, setKickConfirmFor] = useState<Member | null>(null);
     const { addNotification } = useNotifications();
 
     const handleAction = async (eventName: string, payload: object, memberName?: string) => { 
+        const prefixedEvent = eventName.startsWith('bsgroup:nui:') ? eventName : `bsgroup:nui:${eventName}`;
+        console.log(`Action: ${prefixedEvent}`, payload);
         try { 
-            const updatedGroup = await fetchNui<Group>(eventName, payload); 
-            if (updatedGroup) {
-                onUpdateGroup(updatedGroup); 
+            const updatedResponse = await fetchNui<any>(prefixedEvent, payload); 
+            if (updatedResponse && citizenId) {
+                const transformed = transformSingleGroup(updatedResponse, citizenId);
+                onUpdateGroup(transformed); 
                 if (eventName === 'promoteLeader') {
                      addNotification('info', 'Leader Promoted', `${memberName} is now the group leader.`);
                 } else if (eventName === 'kickMember') {
@@ -48,7 +52,7 @@ export const MembersTab: React.FC<{ group: Group; onUpdateGroup: (group: Group) 
     );
 };
 
-export const RequestsTab: React.FC<{ group: Group; onUpdateGroup: (group: Group) => void }> = ({ group, onUpdateGroup }) => {
+export const RequestsTab: React.FC<{ group: Group; onUpdateGroup: (group: Group) => void; citizenId: string | null }> = ({ group, onUpdateGroup, citizenId }) => {
     const isGroupFull = group.members.length >= group.maxMembers;
     const { addNotification } = useNotifications();
 
@@ -77,7 +81,7 @@ export const RequestsTab: React.FC<{ group: Group; onUpdateGroup: (group: Group)
     );
 };
 
-export const TasksTab: React.FC<{ group: Group, onUpdateGroup: (group: Group) => void }> = ({ group, onUpdateGroup }) => {
+export const TasksTab: React.FC<{ group: Group, onUpdateGroup: (group: Group) => void, citizenId: string | null }> = ({ group, onUpdateGroup, citizenId }) => {
     const completedTasks = group.partyTasks.filter(t => t.completed).length;
     const progress = group.partyTasks.length > 0 ? (completedTasks / group.partyTasks.length) * 100 : 0;
     const { addNotification } = useNotifications();

@@ -2,41 +2,80 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNuiEvent } from "../../hooks/useNuiEvent";
 import { TaskDisplayProps } from "../../utils/types";
+import { fetchNui } from "../../utils/fetchNui";
+import { transformParties } from "../../utils/groupUtils";
 
 const TaskDisplay: React.FC = () => {
     const [isVisible, setIsVisible] = useState(false);
     const [data, setData] = useState<TaskDisplayProps>({ title: "", content: "" });
+    const [citizenId, setCitizenId] = useState<string | null>(null);
+    const citizenIdRef = React.useRef<string | null>(null);
 
-    useNuiEvent<TaskDisplayProps>('showTask', (newData) => {
-        setData(newData);
-        setIsVisible(true);
-    });
-
-    useNuiEvent('hideTask', () => {
+    const updateFromGroupData = (parties: any, currentCitizenId: string | null) => {
+        const idToUse = currentCitizenId || citizenIdRef.current;
+        if (!idToUse || !parties) {
+            setIsVisible(false);
+            return;
+        }
+        
+        const transformed = transformParties(parties, idToUse);
+        const { myGroup } = transformed;        
+        if (myGroup) {
+            const taskToShow = myGroup.partyTasks.find(t => t.status === 'current') ||  myGroup.partyTasks.find(t => t.status === 'pending');
+            if (taskToShow) {
+                setData({ title: myGroup.name, content: taskToShow.title });
+                setIsVisible(true);
+                return;
+            }
+        }
         setIsVisible(false);
+    };
+
+    // Get initial player data
+    useEffect(() => {
+        const loadPlayerData = async () => {
+            const playerData = await fetchNui<{ citizenid: string }>("bsgroup:nui:getPlayerData", {});
+            if (playerData?.citizenid) {
+                setCitizenId(playerData.citizenid);
+                citizenIdRef.current = playerData.citizenid;
+                
+                // Initial fetch
+                const response = await fetchNui<{ status: boolean, data: any }>("bsgroup:nui:fetchParties", {});
+                if (response?.status) {
+                    updateFromGroupData(response.data.parties, playerData.citizenid);
+                }
+            }
+        };
+
+        loadPlayerData();
+    }, []);
+
+    const ensureCitizenId = async () => {
+        if (!citizenIdRef.current) {
+            const playerData = await fetchNui<{ citizenid: string }>("bsgroup:nui:getPlayerData", {});
+            if (playerData?.citizenid) {
+                setCitizenId(playerData.citizenid);
+                citizenIdRef.current = playerData.citizenid;
+                return playerData.citizenid;
+            }
+        }
+        return citizenIdRef.current;
+    };
+
+    useNuiEvent<any>('refreshParties', async (response) => {
+        const id = await ensureCitizenId();
+        updateFromGroupData(response.data, id);
     });
 
-    // Mock for development: Cycle through tasks to demonstrate fluid transitions
-    useEffect(() => {
-        const timer1 = setTimeout(() => {
-            setData({ title: "HEIST PREP", content: "Locate the security access panel." });
-            setIsVisible(true);
-        }, 1000);
+    useNuiEvent<any>('refreshTasksDetail', async (response) => {
+        const id = await ensureCitizenId();
+        updateFromGroupData(response.data, id);
+    });
 
-        const timer2 = setTimeout(() => {
-            setData({ title: "HEIST PREP", content: "Hack the terminal.\nProgress: 45%" });
-        }, 4000);
-
-        const timer3 = setTimeout(() => {
-             setData({ title: "HEIST PREP", content: "Acquire thermal charges.\n(1/4)" });
-        }, 7000);
-
-        return () => {
-            clearTimeout(timer1);
-            clearTimeout(timer2);
-            clearTimeout(timer3);
-        };
-    }, []);
+    useNuiEvent<any>('backToParties', async (response) => {
+        const id = await ensureCitizenId();
+        updateFromGroupData(response.data, id);
+    });
 
     return (
         <AnimatePresence>
@@ -47,7 +86,7 @@ const TaskDisplay: React.FC = () => {
                     animate={{ x: 0, opacity: 1 }}
                     exit={{ x: -60, opacity: 0 }}
                     transition={{ type: "spring", stiffness: 180, damping: 22 }}
-                    className="fixed top-[40%] left-6 -translate-y-1/2 w-64 z-50 pointer-events-none select-none font-sans"
+                    className="fixed top-[40%] left-6 -translate-y-1/2 w-64 z-[9999] pointer-events-none select-none font-sans"
                 >
                     <div className="flex flex-col items-start">
                         {/* Title - Moves from right to left */}

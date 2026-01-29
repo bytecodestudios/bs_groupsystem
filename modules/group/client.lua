@@ -2,8 +2,8 @@ local groupBlips = {}
 
 local isRequesting = false
 
-RegisterNUICallback('phone:nui:fetchParties', function(_, cb)
-    local response = lib.callback.await('phone:server:retrieveParties', false)
+RegisterNUICallback('bsgroup:nui:fetchParties', function(_, cb)
+    local response = lib.callback.await('bs_groupsystem:server:retrieveParties', false)
     if response then
         local dataToSend = {
             parties = response,
@@ -15,8 +15,8 @@ RegisterNUICallback('phone:nui:fetchParties', function(_, cb)
     end
 end)
 
-RegisterNUICallback('phone:nui:createParty', function(data, cb)
-    local response = lib.callback.await('phone:server:createParty', false, data)
+RegisterNUICallback('bsgroup:nui:createParty', function(data, cb)
+    local response = lib.callback.await('bs_groupsystem:server:createParty', false, data)
     local result = {
         status = response and response.status or false,
         msg = response and response.msg or response
@@ -24,10 +24,10 @@ RegisterNUICallback('phone:nui:createParty', function(data, cb)
     cb(result)
 end)
 
-RegisterNUICallback('phone:nui:requestJoinParty', function(data, cb)
+RegisterNUICallback('bsgroup:nui:requestJoinParty', function(data, cb)
     if isRequesting then return cb({status = false, msg = locale('please_wait')}) end
     isRequesting = true
-    local response = lib.callback.await('phone:server:requestJoinGroup', false, data)
+    local response = lib.callback.await('bs_groupsystem:server:requestJoinGroup', false, data)
     isRequesting = false
     local result = {
         status = response and response.status or false,
@@ -36,19 +36,44 @@ RegisterNUICallback('phone:nui:requestJoinParty', function(data, cb)
     cb(result)
 end)
 
-RegisterNUICallback('phone:nui:disbandParty', function(_, cb)
-    TriggerServerEvent('phone:server:requestDisbandParty')
+RegisterNUICallback('bsgroup:nui:disbandParty', function(_, cb)
+    TriggerServerEvent('bs_groupsystem:server:requestDisbandParty')
     cb({status = true})
 end)
 
-RegisterNUICallback('phone:nui:leaveParty', function(_, cb)
-    TriggerServerEvent('phone:server:leaveParty')
+RegisterNUICallback('bsgroup:nui:leaveParty', function(_, cb)
+    TriggerServerEvent('bs_groupsystem:server:leaveParty')
     cb({status = true})
 end)
 
-RegisterNUICallback('phone:nui:kickMember', function(data, cb)
-    TriggerServerEvent('phone:server:kickMember', data)
+RegisterNUICallback('bsgroup:nui:kickMember', function(data, cb)
+    TriggerServerEvent('bs_groupsystem:server:kickMember', data)
     cb({status = true})
+end)
+
+RegisterNUICallback('bsgroup:nui:fetchSingleGroup', function(data, cb)
+    local response = lib.callback.await('bsgroup:nui:server:fetchSingleGroup', false, data.groupId)
+    cb(response)
+end)
+
+RegisterNUICallback('bsgroup:nui:processRequest', function(data, cb)
+    local response = lib.callback.await('bsgroup:nui:server:processRequest', false, data)
+    cb(response)
+end)
+
+RegisterNUICallback('bsgroup:nui:promoteLeader', function(data, cb)
+    local response = lib.callback.await('bsgroup:nui:server:promoteLeader', false, data)
+    cb(response)
+end)
+
+RegisterNUICallback('bsgroup:nui:getPlayerData', function(_, cb)
+    local response = lib.callback.await('bsgroup:nui:server:getPlayerData', false)
+    cb(response)
+end)
+
+RegisterNUICallback('bsgroup:nui:closeUI', function(_, cb)
+    SetNuiFocus(false, false)
+    cb('ok')
 end)
 
 ---Locates blip by the name of the group blip and returns its index in the table
@@ -77,11 +102,11 @@ end
 ---Creates a new blip with the specified configuration
 ---@param name string Name identifier for the blip
 ---@param data GroupBlipData Configuration data for the blip
-RegisterNetEvent('phone:client:party:createBlip', function(name, data)
+RegisterNetEvent('bs_groupsystem:client:party:createBlip', function(name, data)
 	if not name or not data then return end
 
 	if findBlipByName(name) then
-		TriggerEvent('phone:client:party:removeBlip', name)
+		TriggerEvent('bs_groupsystem:client:party:removeBlip', name)
 	end
 
 	local blip = nil
@@ -92,7 +117,7 @@ RegisterNetEvent('phone:client:party:createBlip', function(name, data)
 	elseif data.radius then
 		blip = AddBlipForRadius(data.coords.x, data.coords.y, data.coords.z, data.radius)
 	else
-		blip = AddBlipForCoord(data.coords)
+		blip = AddBlipForCoord(data.coords.x, data.coords.y, data.coords.z)
 	end
 
 	if not data.color then data.color = 1 end
@@ -124,7 +149,7 @@ end)
 
 ---Removes a blip with the specified name
 ---@param name string Name of the blip to remove
-RegisterNetEvent('phone:client:party:removeBlip', function(name)
+RegisterNetEvent('bs_groupsystem:client:party:removeBlip', function(name)
 	local i = findBlipByName(name)
 	if i then
 		local blip = groupBlips[i].blip
@@ -135,10 +160,28 @@ RegisterNetEvent('phone:client:party:removeBlip', function(name)
 	end
 end)
 
-RegisterNetEvent('phone:client:party:removeAllBlips', removeAllGroupBlips)
+RegisterNetEvent('bs_groupsystem:client:party:removeAllBlips', removeAllGroupBlips)
+
+RegisterNetEvent('bs_groupsystem:client:updatePhoneData', function(data)
+    if data and data.app == 'party' then
+        SendNUIMessage({
+            action = data.action,
+            data = data
+        })
+    end
+end)
 
 AddEventHandler('onResourceStop', function(resourceName)
 	if resourceName == GetCurrentResourceName() then
 		removeAllGroupBlips()
 	end
 end)
+
+RegisterKeyMapping('openGroups', 'Open Groups', 'keyboard', 'F6')
+RegisterCommand('openGroups', function()
+    SetNuiFocus(true, true)
+    SendNUIMessage({
+        action = 'setVisible',
+        data = true
+    })
+end, false)

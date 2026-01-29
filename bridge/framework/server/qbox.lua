@@ -12,7 +12,7 @@ RegisterNetEvent('QBCore:Server:PlayerLoaded', function(Player)
         name = ('%s %s'):format(Player.PlayerData.charinfo.firstname, Player.PlayerData.charinfo.lastname),
     }
     Players:set(source, _data)
-    TriggerEvent('phone:server:initialised', _data)
+    TriggerEvent('bs_groupsystem:server:initialised', _data)
 end)
 
 RegisterNetEvent('QBCore:Player:SetPlayerData', function(PlayerData)
@@ -25,8 +25,8 @@ RegisterNetEvent('QBCore:Player:SetPlayerData', function(PlayerData)
     end
 
     if _Player then
-        TriggerEvent('phone:server:terminated', _Player)
-        TriggerClientEvent('phone:client:terminated', source)
+        TriggerEvent('bs_groupsystem:server:terminated', _Player)
+        TriggerClientEvent('bs_groupsystem:client:terminated', source)
         Wait(1500)
     end
 
@@ -36,14 +36,14 @@ RegisterNetEvent('QBCore:Player:SetPlayerData', function(PlayerData)
         name = name,
     }
     Players:set(source, _data)
-    TriggerEvent('phone:server:initialised', _data)
+    TriggerEvent('bs_groupsystem:server:initialised', _data)
 end)
 
 RegisterNetEvent('QBCore:Server:OnPlayerUnload', function(source)
     local player = Players:get(source)
     if player then
         Players:clear(source)
-        TriggerEvent('phone:server:terminated', player)
+        TriggerEvent('bs_groupsystem:server:terminated', player)
     end
 end)
 
@@ -52,7 +52,7 @@ RegisterNetEvent('QBCore:Server:PlayerDropped', function(Ply)
     local player = Players:get(source)
     if player then
         Players:clear(source)
-        TriggerEvent('phone:server:terminated', player)
+        TriggerEvent('bs_groupsystem:server:terminated', player)
     end
 end)
 
@@ -67,6 +67,6 @@ AddEventHandler('onResourceStart', function(resourceName)
             name = ('%s %s'):format(Player.PlayerData.charinfo.firstname, Player.PlayerData.charinfo.lastname),
         }
         Players:set(source, _data)
-        TriggerEvent('phone:server:initialised', _data)
+        TriggerEvent('bs_groupsystem:server:initialised', _data)
 	end
 end)

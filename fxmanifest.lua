@@ -16,6 +16,7 @@ client_script {
     'modules/utils/client.lua',
     'bridge/**/client/*.lua',
     'bridge/**/client.lua',
+    'modules/nui_extended/client.lua',
     'modules/**/client.lua',
 }
 
@@ -23,6 +24,7 @@ server_scripts {
     'modules/utils/server.lua',
     'bridge/**/server/*.lua',
     'bridge/**/server.lua',
+    'modules/nui_extended/server.lua',
     'modules/**/server.lua',
 }
 

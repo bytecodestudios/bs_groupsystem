@@ -7,7 +7,7 @@ import { ConfirmationModal } from './Modals';
 
 const MotionDiv = motion.div;
 
-const GroupDetails: React.FC<{ group: Group, onBack: () => void, onUpdateGroup: (group: Group) => void, onDisbandOrLeave: () => void }> = ({ group, onBack, onUpdateGroup, onDisbandOrLeave }) => {
+const GroupDetails: React.FC<{ group: Group, onBack: () => void, onUpdateGroup: (group: Group) => void, onDisbandOrLeave: () => void, citizenId: string | null }> = ({ group, onBack, onUpdateGroup, onDisbandOrLeave, citizenId }) => {
     const isLeader = group.isLeader;
     const [activeTab, setActiveTab] = useState(() => {
         if (isLeader && group.requests.length > 0) {
@@ -51,7 +51,7 @@ const GroupDetails: React.FC<{ group: Group, onBack: () => void, onUpdateGroup: 
                 </div>
                 <button onClick={() => setConfirmModalOpen(true)} className={`flex items-center space-x-2 px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors ${isLeader ? 'bg-red-600/20 text-red-300 hover:bg-red-600/30' : 'bg-secondary hover:bg-muted'}`}><LogOut className="w-4 h-4" /><span>{isLeader ? 'Disband Group' : 'Leave Group'}</span></button>
             </div>
-            <main className="flex-grow overflow-y-auto bg-black/20"><AnimatePresence mode="wait"><MotionDiv key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="p-6">{activeTab === 'members' && <MembersTab group={group} onUpdateGroup={onUpdateGroup} />}{activeTab === 'requests' && <RequestsTab group={group} onUpdateGroup={onUpdateGroup} />}{activeTab === 'partyTasks' && <TasksTab group={group} onUpdateGroup={onUpdateGroup} />}</MotionDiv></AnimatePresence></main>
+            <main className="flex-grow overflow-y-auto bg-black/20"><AnimatePresence mode="wait"><MotionDiv key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="p-6">{activeTab === 'members' && <MembersTab group={group} onUpdateGroup={onUpdateGroup} citizenId={citizenId} />}{activeTab === 'requests' && <RequestsTab group={group} onUpdateGroup={onUpdateGroup} citizenId={citizenId} />}{activeTab === 'partyTasks' && <TasksTab group={group} onUpdateGroup={onUpdateGroup} citizenId={citizenId} />}</MotionDiv></AnimatePresence></main>
             <AnimatePresence>{isConfirmModalOpen && <ConfirmationModal title={isLeader ? "Disband Group?" : "Leave Group?"} message={<>Are you sure you want to {isLeader ? 'disband' : 'leave'} <span className="font-semibold text-foreground">{group.name}</span>? This cannot be undone.</>} confirmText={isLeader ? "Confirm Disband" : "Confirm Leave"} confirmClass={isLeader ? "bg-red-600 hover:bg-red-700" : "bg-red-600 hover:bg-red-700"} onConfirm={() => { onDisbandOrLeave(); setConfirmModalOpen(false); }} onCancel={() => setConfirmModalOpen(false)} Icon={Trash2} />}</AnimatePresence>
         </div>
     );

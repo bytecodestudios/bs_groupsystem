@@ -15,14 +15,14 @@ RegisterNetEvent('ox:playerLoaded', function(playerId, userId, charId)
         name = ('%s %s'):format(Player.get('firstName'), Player.get('lastName')),
     }
     Players:set(source, _data)
-    TriggerEvent('phone:server:initialised', _data)
+    TriggerEvent('bs_groupsystem:server:initialised', _data)
 end)
 
 RegisterNetEvent('ox:playerLogout', function(playerId, userId, charId)
     local player = Players:get(playerId)
     if player then
         Players:clear(playerId)
-        TriggerEvent('phone:server:terminated', player)
+        TriggerEvent('bs_groupsystem:server:terminated', player)
     end
 end)
 
@@ -31,7 +31,7 @@ AddEventHandler('playerDropped', function()
     local player = Players:get(playerId)
     if player then
         Players:clear(playerId)
-        TriggerEvent('phone:server:terminated', player)
+        TriggerEvent('bs_groupsystem:server:terminated', player)
     end
 end)
 
@@ -46,6 +46,6 @@ AddEventHandler('onResourceStart', function(resourceName)
             name = ('%s %s'):format(Player.get('firstName'), Player.get('lastName')),
         }
         Players:set(source, _data)
-        TriggerEvent('phone:server:initialised', _data)
+        TriggerEvent('bs_groupsystem:server:initialised', _data)
 	end
 end)
