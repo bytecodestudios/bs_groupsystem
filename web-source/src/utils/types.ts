@@ -32,6 +32,12 @@ export interface GroupTask {
   title: string;
   completed: boolean;
   status: 'pending' | 'current' | 'done';
+  type?: 'checkbox' | 'numerical' | 'numerical-progress';
+  progress?: {
+    current: number;
+    target: number;
+    unit: string;
+  };
 }
 
 export interface Group {
@@ -48,7 +54,14 @@ export interface Group {
 }
 
 // Active Tasks UI
-export interface TaskDisplayProps {
+export interface Task {
+  id: string;
   title: string;
-  content: string;
+  status: 'done' | 'active' | 'pending';
+  type: 'checkbox' | 'numerical' | 'numerical-progress';
+  progress?: {
+    current: number;
+    target: number;
+    unit: string;
+  };
 }

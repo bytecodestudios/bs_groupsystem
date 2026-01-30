@@ -3,9 +3,9 @@ import Groups from './group/Groups';
 import { motion, AnimatePresence } from "framer-motion"
 import { X } from 'lucide-react';
 import { NotificationProvider } from './misc/Notification';
-import TaskDisplay from './misc/TaskDisplay';
 import { fetchNui } from '../utils/fetchNui';
 import { useNuiEvent } from '../hooks/useNuiEvent';
+import { TaskWidget } from './misc/TaskWidget';
 
 function App() {
   const [visible, setVisible] = useState(false);
@@ -22,8 +22,8 @@ function App() {
   return (
     <motion.div className="h-screen w-screen antialiased relative">
       <NotificationProvider>
-        {/* Task Display */}
-        <TaskDisplay />
+        {/* Task Widget */}
+        <TaskWidget />
 
         {/* Groups */}
         <AnimatePresence>
