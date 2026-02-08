@@ -129,6 +129,8 @@ const Groups = () => {
     const [isCreateModalOpen, setCreateModalOpen] = useState(false);
     const [sentRequests, setSentRequests] = useState<Set<string>>(new Set());
     const [activeTab, setActiveTab] = useState<TabId>('dashboard');
+    const [isVpnConnected, setIsVpnConnected] = useState(false);
+    const [hasVpnAccess, setHasVpnAccess] = useState(true);
     
     const { addNotification } = useNotifications();
     const [citizenId, setCitizenId] = useState<string | null>(null);
@@ -161,8 +163,29 @@ const Groups = () => {
 
     useEffect(() => {
         setIsLoading(true);
+        
+        // Check VPN access on mount
+        fetchNui<{ hasAccess: boolean, isConnected: boolean }>('bsgroup:nui:checkVpnAccess', {}).then((response) => {
+            if (response) {
+                setHasVpnAccess(response.hasAccess ?? true);
+                setIsVpnConnected(response.isConnected ?? false);
+            }
+        });
+        
         fetchGroupsData().finally(() => setTimeout(() => setIsLoading(false), 800));
     }, []);
+
+    // VPN toggle handler - calls backend to validate and toggle
+    const handleVpnToggle = async (connect: boolean) => {
+        const response = await fetchNui<{ success: boolean, connected: boolean, msg?: string }>('bsgroup:nui:toggleVpn', { connect });
+        if (response?.success) {
+            setIsVpnConnected(response.connected);
+            // Refresh groups to apply illegal filtering
+            fetchGroupsData();
+        } else if (response?.msg) {
+            addNotification('error', 'VPN Error', response.msg, 5000);
+        }
+    };
 
     useNuiEvent<any>('refreshParties', (response) => {
         if (citizenId) {
@@ -294,6 +317,7 @@ const Groups = () => {
                                             onOpenCreateModal={() => setCreateModalOpen(true)}
                                             onRequestToJoin={handleRequestToJoin}
                                             sentRequests={sentRequests}
+                                            isVpnConnected={isVpnConnected}
                                         />
                                     </MotionDiv>
                                 )}
@@ -304,13 +328,14 @@ const Groups = () => {
                                             isInGroup={!!myGroup}
                                             onRequestToJoin={handleRequestToJoin} 
                                             sentRequests={sentRequests} 
-                                            onOpenCreateModal={() => setCreateModalOpen(true)} 
+                                            onOpenCreateModal={() => setCreateModalOpen(true)}
+                                            isVpnConnected={isVpnConnected}
                                         />
                                     </MotionDiv>
                                 )}
                                 {activeTab === 'settings' && (
                                     <MotionDiv key="settings" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.2 }} className="h-full overflow-y-auto">
-                                        <SettingsTab />
+                                        <SettingsTab isVpnConnected={isVpnConnected} onVpnConnectionChange={handleVpnToggle} hasAccess={hasVpnAccess} />
                                     </MotionDiv>
                                 )}
                             </AnimatePresence>
@@ -319,7 +344,7 @@ const Groups = () => {
                 )}
             </AnimatePresence>
             <AnimatePresence>
-                {isCreateModalOpen && <CreateGroupModal onClose={() => setCreateModalOpen(false)} onCreate={handleCreateGroup} />}
+                {isCreateModalOpen && <CreateGroupModal onClose={() => setCreateModalOpen(false)} onCreate={handleCreateGroup} isVpnConnected={isVpnConnected} />}
             </AnimatePresence>
         </div>
     );

@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, FileText, Users, Globe, Lock, Mail } from 'lucide-react';
+import { X, FileText, Users, Globe, Lock, Mail, ShieldAlert } from 'lucide-react';
 import { Group } from '../../utils/types';
 
 const MotionDiv = motion.div;
 
-export const CreateGroupModal: React.FC<{ onClose: () => void, onCreate: (data: { name: string; joinType: Group['joinType']; maxMembers: number; }) => void }> = ({ onClose, onCreate }) => {
+export const CreateGroupModal: React.FC<{ onClose: () => void, onCreate: (data: { name: string; joinType: Group['joinType']; maxMembers: number; isIllegal?: boolean; }) => void, isVpnConnected: boolean }> = ({ onClose, onCreate, isVpnConnected }) => {
     const [step, setStep] = useState<'input' | 'confirm'>('input');
     const [name, setName] = useState('');
     const [joinType, setJoinType] = useState<Group['joinType']>('Request to Join');
     const [maxMembers, setMaxMembers] = useState('5');
+    const [isIllegal, setIsIllegal] = useState(false);
     const [error, setError] = useState('');
 
     const handleProceedToConfirm = (e: React.FormEvent) => {
@@ -22,7 +23,7 @@ export const CreateGroupModal: React.FC<{ onClose: () => void, onCreate: (data: 
     };
 
     const handleFinalCreate = () => {
-        onCreate({ name: name.trim(), joinType, maxMembers: parseInt(maxMembers, 10) });
+        onCreate({ name: name.trim(), joinType, maxMembers: parseInt(maxMembers, 10), isIllegal });
     };
 
     return (
@@ -68,12 +69,32 @@ export const CreateGroupModal: React.FC<{ onClose: () => void, onCreate: (data: 
                                                 </button>
                                             ))}
                                         </div>
-                                        <p className="text-xs text-center text-muted-foreground h-4">
+                                    <p className="text-xs text-center text-muted-foreground h-4">
                                             {joinType === 'Request to Join' && "Anyone can find and request to join."}
                                             {joinType === 'Invite Only' && "Only invited members can join."}
                                             {joinType === 'Closed' && "No new members can join."}
                                         </p>
                                     </div>
+
+                                    {/* Illegal Group Toggle - Only visible if VPN is connected */}
+                                    {isVpnConnected && (
+                                        <div className="space-y-2 pt-2 border-t border-border">
+                                            <label className="flex items-center justify-between cursor-pointer p-3 rounded-lg border border-red-500/30 bg-red-500/5 hover:bg-red-500/10 transition-colors">
+                                                <div className="flex items-center space-x-3">
+                                                    <div className="bg-red-500/20 p-2 rounded-lg">
+                                                        <ShieldAlert className="w-5 h-5 text-red-500" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold text-red-500 text-sm">Illegal Network</p>
+                                                        <p className="text-[10px] text-red-400/70">Hidden from public lists. VPN required.</p>
+                                                    </div>
+                                                </div>
+                                                <div className={`w-10 h-5 rounded-full relative transition-colors ${isIllegal ? 'bg-red-500' : 'bg-secondary border border-border'}`} onClick={() => setIsIllegal(!isIllegal)}>
+                                                    <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${isIllegal ? 'left-5' : 'left-0.5'}`} />
+                                                </div>
+                                            </label>
+                                        </div>
+                                    )}
 
                                     {error && <p className="text-xs text-red-500 text-center -mt-2">{error}</p>}
                                 </div>
@@ -82,8 +103,10 @@ export const CreateGroupModal: React.FC<{ onClose: () => void, onCreate: (data: 
                         </MotionDiv>
                     ) : (
                         <MotionDiv key="confirm" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                            <div className="p-6"><p className="text-sm text-center text-muted-foreground mb-4">Review your new group's details.</p><div className="bg-secondary/50 border border-border rounded-lg p-4 space-y-3 text-sm"><div className="flex justify-between items-center"><span className="text-muted-foreground font-medium flex items-center"><FileText className="w-4 h-4 mr-2" />Group Name</span><span className="font-semibold text-foreground">{name}</span></div><div className="flex justify-between items-center"><span className="text-muted-foreground font-medium flex items-center"><Users className="w-4 h-4 mr-2" />Max Members</span><span className="font-semibold text-foreground">{maxMembers}</span></div><div className="flex justify-between items-center"><span className="text-muted-foreground font-medium flex items-center"><Globe className="w-4 h-4 mr-2" />Privacy</span><span className="font-semibold text-foreground">{joinType}</span></div></div></div>
-                            <div className="px-6 py-4 bg-secondary/30 border-t border-border flex justify-end space-x-3 rounded-b-2xl"><button type="button" onClick={() => setStep('input')} className="px-4 py-2 text-sm font-semibold text-foreground bg-secondary hover:bg-muted border border-border rounded-lg transition-colors">Back</button><button type="button" onClick={handleFinalCreate} className="px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors">Confirm & Create</button></div>
+                            <div className="p-6"><p className="text-sm text-center text-muted-foreground mb-4">Review your new group's details.</p><div className="bg-secondary/50 border border-border rounded-lg p-4 space-y-3 text-sm"><div className="flex justify-between items-center"><span className="text-muted-foreground font-medium flex items-center"><FileText className="w-4 h-4 mr-2" />Group Name</span><span className="font-semibold text-foreground">{name}</span></div><div className="flex justify-between items-center"><span className="text-muted-foreground font-medium flex items-center"><Users className="w-4 h-4 mr-2" />Max Members</span><span className="font-semibold text-foreground">{maxMembers}</span></div><div className="flex justify-between items-center"><span className="text-muted-foreground font-medium flex items-center"><Globe className="w-4 h-4 mr-2" />Privacy</span><span className="font-semibold text-foreground">{joinType}</span></div>
+                            {isIllegal && <div className="flex justify-between items-center pt-2 border-t border-border/50"><span className="text-red-400 font-medium flex items-center"><ShieldAlert className="w-4 h-4 mr-2" />Network</span><span className="font-bold text-red-500">Illegal</span></div>}
+                            </div></div>
+                            <div className="px-6 py-4 bg-secondary/30 border-t border-border flex justify-end space-x-3 rounded-b-2xl"><button type="button" onClick={() => setStep('input')} className="px-4 py-2 text-sm font-semibold text-foreground bg-secondary hover:bg-muted border border-border rounded-lg transition-colors">Back</button><button type="button" onClick={handleFinalCreate} className={`px-4 py-2 text-sm font-semibold text-white rounded-lg transition-colors ${isIllegal ? 'bg-red-600 hover:bg-red-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}>Confirm & Create</button></div>
                         </MotionDiv>
                     )}
                 </AnimatePresence>

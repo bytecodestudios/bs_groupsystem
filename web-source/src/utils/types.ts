@@ -51,6 +51,7 @@ export interface Group {
   partyTasks: GroupTask[];
   requests: Member[];
   isLeader?: boolean;
+  isIllegal?: boolean;
 }
 
 // Active Tasks UI

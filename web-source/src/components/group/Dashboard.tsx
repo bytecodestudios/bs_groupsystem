@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Search, Plus, ChevronLeft, ChevronRight, LayoutDashboard, Activity, AlertCircle, TrendingUp, CheckCircle2, ListTodo, Users, ArrowUpRight, Clock, Send } from 'lucide-react';
+import { Shield, Search, Plus, ChevronLeft, ChevronRight, LayoutDashboard, Activity, AlertCircle, TrendingUp, CheckCircle2, ListTodo, Users, ArrowUpRight, Clock, Send, ShieldAlert } from 'lucide-react';
 import { Group } from '../../utils/types';
 import { MyGroupCard, PublicGroupCard } from './GroupCard';
 
@@ -14,8 +14,9 @@ export const DashboardView: React.FC<{
     onSelectGroup: (group: Group) => void, 
     onOpenCreateModal: () => void,
     onRequestToJoin: (groupId: string) => void,
-    sentRequests: Set<string>
-}> = ({ myGroup, allGroups, isInGroup, onSelectGroup, onOpenCreateModal, onRequestToJoin, sentRequests }) => {
+    sentRequests: Set<string>,
+    isVpnConnected: boolean
+}> = ({ myGroup, allGroups, isInGroup, onSelectGroup, onOpenCreateModal, onRequestToJoin, sentRequests, isVpnConnected }) => {
     
     // Derived Stats
     const tasksTotal = myGroup?.partyTasks.length || 0;
@@ -23,10 +24,10 @@ export const DashboardView: React.FC<{
 
     const featuredGroups = useMemo(() => {
         return allGroups
-            .filter(g => g.status === 'Recruiting')
+            .filter(g => g.status === 'Recruiting' && (isVpnConnected ? true : !g.isIllegal))
             .sort(() => 0.5 - Math.random()) // Simple shuffle
             .slice(0, 3);
-    }, [allGroups]);
+    }, [allGroups, isVpnConnected]);
     
     const pendingIncomingRequests = myGroup?.requests || [];
     const pendingOutgoingRequests = useMemo(() => {
@@ -42,8 +43,8 @@ export const DashboardView: React.FC<{
                         <div className="lg:col-span-2 space-y-6">
                             <header className="flex justify-between items-center">
                                 <h2 className="text-xl font-bold text-foreground flex items-center">
-                                    <Shield className="w-6 h-6 mr-3 text-emerald-400" /> 
-                                    My Group
+                                    <Shield className={`w-6 h-6 mr-3 ${myGroup.isIllegal ? 'text-red-500' : 'text-emerald-400'}`} /> 
+                                    {myGroup.isIllegal ? <span className="text-red-500">ILLEGAL GROUP</span> : 'My Group'}
                                 </h2>
                             </header>
                             <MyGroupCard group={myGroup} onSelectGroup={onSelectGroup} />
@@ -196,26 +197,39 @@ export const GroupsView: React.FC<{
     isInGroup: boolean,
     onRequestToJoin: (groupId: string) => void, 
     sentRequests: Set<string>, 
-    onOpenCreateModal: () => void 
-}> = ({ allGroups, isInGroup, onRequestToJoin, sentRequests, onOpenCreateModal }) => {
+    onOpenCreateModal: () => void,
+    isVpnConnected: boolean
+}> = ({ allGroups, isInGroup, onRequestToJoin, sentRequests, onOpenCreateModal, isVpnConnected }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [showOpenOnly, setShowOpenOnly] = useState(false);
     const [statusFilter, setStatusFilter] = useState<'all' | 'Recruiting' | 'Active' | 'Full'>('all');
+    const [typeFilter, setTypeFilter] = useState<'all' | 'illegal'>('all');
     const [currentPage, setCurrentPage] = useState(1);
     const GROUPS_PER_PAGE = 6;
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchQuery, showOpenOnly, statusFilter]);
+    }, [searchQuery, showOpenOnly, statusFilter, typeFilter]);
     
+    // Reset type filter if VPN disconnects
+    useEffect(() => {
+        if (!isVpnConnected && typeFilter === 'illegal') {
+            setTypeFilter('all');
+        }
+    }, [isVpnConnected, typeFilter]);
+
     const filteredGroups = useMemo(() => {
         return allGroups.filter(group => {
+            // Illegal group visibility check
+            if (group.isIllegal && !isVpnConnected) return false;
+            if (typeFilter === 'illegal' && !group.isIllegal) return false;
+            
             if (searchQuery && !group.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
             if (statusFilter !== 'all' && group.status !== statusFilter) return false;
             if (showOpenOnly && group.members.length >= group.maxMembers) return false;
             return true;
         });
-    }, [allGroups, searchQuery, statusFilter, showOpenOnly]);
+    }, [allGroups, searchQuery, statusFilter, showOpenOnly, typeFilter, isVpnConnected]);
 
     const totalPages = Math.ceil(filteredGroups.length / GROUPS_PER_PAGE);
     const paginatedPublicGroups = filteredGroups.slice((currentPage - 1) * GROUPS_PER_PAGE, currentPage * GROUPS_PER_PAGE);
@@ -238,10 +252,24 @@ export const GroupsView: React.FC<{
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                         <input type="text" placeholder="Search by group name..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full md:w-64 bg-input border-2 border-transparent focus:border-border rounded-lg pl-9 pr-4 py-1.5 text-sm focus:ring-0 focus:outline-none transition-colors"/>
                     </div>
-                    <div className="flex items-center space-x-2 bg-secondary/30 p-1 rounded-lg">
+                    <div className="flex items-center space-x-2 bg-secondary/30 p-1 rounded-lg overflow-x-auto">
                         {(['all', 'Recruiting', 'Active', 'Full'] as const).map(status => (
                             <button key={status} onClick={() => setStatusFilter(status)} className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${statusFilter === status ? 'bg-primary text-background shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>{status === 'all' ? 'All' : status}</button>
                         ))}
+                        
+                        {isVpnConnected && (
+                            <>
+                                <div className="h-4 w-px bg-border mx-1"></div>
+                                <button 
+                                    onClick={() => setTypeFilter(typeFilter === 'illegal' ? 'all' : 'illegal')} 
+                                    className={`flex items-center space-x-2 px-3 py-1 text-xs font-semibold rounded-md transition-colors ${typeFilter === 'illegal' ? 'bg-red-500/20 text-red-500 border border-red-500/30' : 'text-red-400 hover:text-red-300'}`}
+                                >
+                                    <ShieldAlert className="w-3 h-3" />
+                                    <span>Illegal</span>
+                                </button>
+                            </>
+                        )}
+                        
                         <div className="h-4 w-px bg-border mx-1"></div>
                         <button onClick={() => setShowOpenOnly(!showOpenOnly)} className={`flex items-center space-x-2 px-3 py-1 text-xs font-semibold rounded-md transition-colors ${showOpenOnly ? 'bg-green-500/20 text-green-300' : 'text-muted-foreground hover:text-foreground'}`}>
                             <div className={`w-1.5 h-1.5 rounded-full ${showOpenOnly ? 'bg-green-400' : 'bg-gray-500'}`}></div>

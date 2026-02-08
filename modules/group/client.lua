@@ -1,6 +1,7 @@
 local groupBlips = {}
 
 local isRequesting = false
+local vpnConnected = false -- Persistent VPN state
 
 RegisterNUICallback('bsgroup:nui:fetchParties', function(_, cb)
     local response = lib.callback.await('bs_groupsystem:server:retrieveParties', false)
@@ -12,6 +13,38 @@ RegisterNUICallback('bsgroup:nui:fetchParties', function(_, cb)
         cb({status = true, data = dataToSend})
     else
         cb({status = false, msg = response})
+    end
+end)
+
+-- VPN Access Check: Returns whether player has the shadowmod item and current VPN state
+RegisterNUICallback('bsgroup:nui:checkVpnAccess', function(_, cb)
+    local hasAccess = CanSeeIllegalParties()
+    
+    -- If VPN was on but player lost the item, auto-disconnect
+    if vpnConnected and not hasAccess then
+        vpnConnected = false
+    end
+    
+    cb({ hasAccess = hasAccess, isConnected = vpnConnected })
+end)
+
+-- VPN Toggle: Validates and returns connection status
+RegisterNUICallback('bsgroup:nui:toggleVpn', function(data, cb)
+    local wantsToConnect = data.connect
+    if wantsToConnect then
+        -- Verify player has the shadowmod item before allowing VPN connection
+        local hasAccess = CanSeeIllegalParties()
+        if hasAccess then
+            vpnConnected = true
+            cb({ success = true, connected = true })
+        else
+            vpnConnected = false
+            cb({ success = false, connected = false, msg = 'No VPN hardware detected' })
+        end
+    else
+        -- Allow disconnect without validation
+        vpnConnected = false
+        cb({ success = true, connected = false })
     end
 end)
 
