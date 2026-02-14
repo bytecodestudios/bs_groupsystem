@@ -6,9 +6,11 @@ import { NotificationProvider } from './misc/Notification';
 import { fetchNui } from '../utils/fetchNui';
 import { useNuiEvent } from '../hooks/useNuiEvent';
 import { TaskWidget } from './misc/TaskWidget';
+import { useLocale } from '../hooks/useLocale';
 
 function App() {
   const [visible, setVisible] = useState(false);
+  const { t } = useLocale();
 
   useNuiEvent('setVisible', (data: boolean) => {
     setVisible(data);
@@ -42,7 +44,7 @@ function App() {
                   </div>
                   <div className="w-4 h-4 bg-gradient-to-br from-yellow-500 to-yellow-500 rounded-full" />
                   <div className="w-4 h-4 bg-gradient-to-br from-emerald-500 to-green-500 rounded-full" />
-                  <span className="text-md font-medium text-white">Groups</span>
+                  <span className="text-md font-medium text-white">{t('app.title')}</span>
                 </div>
               </div>
 

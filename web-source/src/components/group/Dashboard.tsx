@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Search, Plus, ChevronLeft, ChevronRight, LayoutDashboard, Activity, AlertCircle, TrendingUp, CheckCircle2, ListTodo, Users, ArrowUpRight, Clock, Send, ShieldAlert } from 'lucide-react';
 import { Group } from '../../utils/types';
 import { MyGroupCard, PublicGroupCard } from './GroupCard';
+import { useLocale } from '../../hooks/useLocale';
 
 const MotionDiv = motion.div;
 const MotionButton = motion.button;
@@ -17,6 +18,7 @@ export const DashboardView: React.FC<{
     sentRequests: Set<string>,
     isVpnConnected: boolean
 }> = ({ myGroup, allGroups, isInGroup, onSelectGroup, onOpenCreateModal, onRequestToJoin, sentRequests, isVpnConnected }) => {
+    const { t } = useLocale();
     
     // Derived Stats
     const tasksTotal = myGroup?.partyTasks.length || 0;
@@ -44,7 +46,7 @@ export const DashboardView: React.FC<{
                             <header className="flex justify-between items-center">
                                 <h2 className="text-xl font-bold text-foreground flex items-center">
                                     <Shield className={`w-6 h-6 mr-3 ${myGroup.isIllegal ? 'text-red-500' : 'text-emerald-400'}`} /> 
-                                    {myGroup.isIllegal ? <span className="text-red-500">ILLEGAL GROUP</span> : 'My Group'}
+                                    {myGroup.isIllegal ? <span className="text-red-500">{t('dashboard.illegal_group')}</span> : t('dashboard.my_group')}
                                 </h2>
                             </header>
                             <MyGroupCard group={myGroup} onSelectGroup={onSelectGroup} />
@@ -52,8 +54,8 @@ export const DashboardView: React.FC<{
                             {/* Mission Status / Tasks Preview */}
                             <div className="bg-secondary/20 border border-border rounded-xl p-5">
                                 <div className="flex justify-between items-center mb-4">
-                                    <h3 className="text-sm font-bold text-foreground flex items-center"><ListTodo className="w-4 h-4 mr-2 text-blue-400"/>Active Missions</h3>
-                                    <span className="text-xs font-semibold text-blue-300 bg-blue-500/10 px-2 py-0.5 rounded-full">{tasksCompleted}/{tasksTotal} Done</span>
+                                    <h3 className="text-sm font-bold text-foreground flex items-center"><ListTodo className="w-4 h-4 mr-2 text-blue-400"/>{t('dashboard.active_missions')}</h3>
+                                    <span className="text-xs font-semibold text-blue-300 bg-blue-500/10 px-2 py-0.5 rounded-full">{t('dashboard.done_format', String(tasksCompleted), String(tasksTotal))}</span>
                                 </div>
                                 {myGroup.partyTasks.length > 0 ? (
                                     <div className="space-y-2">
@@ -63,10 +65,10 @@ export const DashboardView: React.FC<{
                                                 <span className={`${task.completed ? 'text-muted-foreground line-through' : 'text-foreground'}`}>{task.title}</span>
                                             </div>
                                         ))}
-                                        {myGroup.partyTasks.length > 3 && <p className="text-xs text-center text-muted-foreground pt-1">+{myGroup.partyTasks.length - 3} more tasks...</p>}
+                                        {myGroup.partyTasks.length > 3 && <p className="text-xs text-center text-muted-foreground pt-1">{t('dashboard.more_tasks', String(myGroup.partyTasks.length - 3))}</p>}
                                     </div>
                                 ) : (
-                                    <p className="text-sm text-muted-foreground italic">No active missions assigned.</p>
+                                    <p className="text-sm text-muted-foreground italic">{t('dashboard.no_active_missions')}</p>
                                 )}
                             </div>
                         </div>
@@ -76,7 +78,7 @@ export const DashboardView: React.FC<{
                              <div className="bg-secondary/20 border border-border rounded-xl p-5 h-full flex flex-col">
                                 <h3 className="text-sm font-bold text-foreground flex items-center mb-4">
                                     <Clock className="w-4 h-4 mr-2 text-amber-400"/>
-                                    Pending Actions
+                                    {t('dashboard.pending_actions')}
                                 </h3>
                                 
                                 <div className="space-y-6 flex-grow">
@@ -84,7 +86,7 @@ export const DashboardView: React.FC<{
                                     {myGroup.isLeader && (
                                         <div className="space-y-3">
                                             <div className="flex items-center justify-between">
-                                                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Join Requests</p>
+                                                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('dashboard.join_requests')}</p>
                                                 <span className="text-xs bg-secondary px-1.5 py-0.5 rounded text-foreground">{pendingIncomingRequests.length}</span>
                                             </div>
                                             
@@ -104,7 +106,7 @@ export const DashboardView: React.FC<{
                                                 </div>
                                             ) : (
                                                 <div className="p-3 bg-secondary/20 rounded-lg border border-border/30 text-center">
-                                                    <p className="text-xs text-muted-foreground italic">No new recruits waiting.</p>
+                                                    <p className="text-xs text-muted-foreground italic">{t('dashboard.no_new_recruits')}</p>
                                                 </div>
                                             )}
                                         </div>
@@ -113,7 +115,7 @@ export const DashboardView: React.FC<{
                                     {/* Outgoing Requests */}
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between">
-                                             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Sent Requests</p>
+                                             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('dashboard.sent_requests')}</p>
                                              <span className="text-xs bg-secondary px-1.5 py-0.5 rounded text-foreground">{pendingOutgoingRequests.length}</span>
                                         </div>
                                        
@@ -127,7 +129,7 @@ export const DashboardView: React.FC<{
                                                             </div>
                                                             <div className="flex flex-col">
                                                                 <span className="text-sm font-medium leading-none">{group.name}</span>
-                                                                <span className="text-[10px] text-muted-foreground mt-0.5">Application sent</span>
+                                                                <span className="text-[10px] text-muted-foreground mt-0.5">{t('dashboard.application_sent')}</span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -135,7 +137,7 @@ export const DashboardView: React.FC<{
                                             </div>
                                         ) : (
                                             <div className="p-3 bg-secondary/20 rounded-lg border border-border/30 text-center">
-                                                <p className="text-xs text-muted-foreground italic">No active applications.</p>
+                                                <p className="text-xs text-muted-foreground italic">{t('dashboard.no_active_applications')}</p>
                                             </div>
                                         )}
                                     </div>
@@ -153,14 +155,14 @@ export const DashboardView: React.FC<{
                             <div className="inline-flex p-4 bg-emerald-500/20 rounded-full mb-4 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
                                 <LayoutDashboard className="w-8 h-8 text-emerald-300" />
                             </div>
-                            <h3 className="text-3xl font-bold text-white mb-2">Find Your Squad</h3>
+                            <h3 className="text-3xl font-bold text-white mb-2">{t('dashboard.find_your_squad')}</h3>
                             <p className="text-base text-gray-300 max-w-md mx-auto leading-relaxed">
-                                Join an elite group to access exclusive missions, share resources, and dominate the city. Or start your own legacy today.
+                                {t('dashboard.find_your_squad_desc')}
                             </p>
                             <div className="pt-6">
                                 <button onClick={onOpenCreateModal} className="px-8 py-3 bg-white text-emerald-900 rounded-lg font-bold shadow-lg hover:bg-gray-100 transition-all transform hover:scale-105 active:scale-95 flex items-center mx-auto">
                                     <Plus className="w-5 h-5 mr-2" />
-                                    Create New Group
+                                    {t('dashboard.create_new_group')}
                                 </button>
                             </div>
                          </div>
@@ -170,8 +172,8 @@ export const DashboardView: React.FC<{
                      {featuredGroups.length > 0 && (
                          <div className="space-y-4">
                              <div className="flex justify-between items-center px-1">
-                                 <h3 className="text-lg font-bold text-foreground flex items-center"><TrendingUp className="w-5 h-5 mr-2 text-amber-400"/>Trending Squads</h3>
-                                 <span className="text-xs text-muted-foreground">Featured recruiting groups</span>
+                                 <h3 className="text-lg font-bold text-foreground flex items-center"><TrendingUp className="w-5 h-5 mr-2 text-amber-400"/>{t('dashboard.trending_squads')}</h3>
+                                 <span className="text-xs text-muted-foreground">{t('dashboard.featured_recruiting')}</span>
                              </div>
                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                  {featuredGroups.map(group => (
@@ -206,6 +208,7 @@ export const GroupsView: React.FC<{
     const [typeFilter, setTypeFilter] = useState<'all' | 'illegal'>('all');
     const [currentPage, setCurrentPage] = useState(1);
     const GROUPS_PER_PAGE = 6;
+    const { t } = useLocale();
 
     useEffect(() => {
         setCurrentPage(1);
@@ -239,22 +242,22 @@ export const GroupsView: React.FC<{
             <div className="flex-shrink-0 space-y-4 mb-6">
                 <header className="flex justify-between items-center">
                     <h2 className="text-xl font-bold text-foreground flex items-center">
-                        <Search className="w-6 h-6 mr-3 text-blue-400" /> Discover Groups
+                        <Search className="w-6 h-6 mr-3 text-blue-400" /> {t('dashboard.discover_groups')}
                     </h2>
                     <button onClick={onOpenCreateModal} className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white text-sm font-bold rounded-lg shadow-lg shadow-emerald-500/20 transition-all hover:scale-105 active:scale-95">
                         <Plus className="w-4 h-4" />
-                        <span>Create Group</span>
+                        <span>{t('dashboard.create_group')}</span>
                     </button>
                 </header>
                 
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div className="relative flex-grow md:flex-grow-0">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <input type="text" placeholder="Search by group name..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full md:w-64 bg-input border-2 border-transparent focus:border-border rounded-lg pl-9 pr-4 py-1.5 text-sm focus:ring-0 focus:outline-none transition-colors"/>
+                        <input type="text" placeholder={t('dashboard.search_placeholder')} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full md:w-64 bg-input border-2 border-transparent focus:border-border rounded-lg pl-9 pr-4 py-1.5 text-sm focus:ring-0 focus:outline-none transition-colors"/>
                     </div>
                     <div className="flex items-center space-x-2 bg-secondary/30 p-1 rounded-lg overflow-x-auto">
                         {(['all', 'Recruiting', 'Active', 'Full'] as const).map(status => (
-                            <button key={status} onClick={() => setStatusFilter(status)} className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${statusFilter === status ? 'bg-primary text-background shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>{status === 'all' ? 'All' : status}</button>
+                            <button key={status} onClick={() => setStatusFilter(status)} className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${statusFilter === status ? 'bg-primary text-background shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>{status === 'all' ? t('dashboard.filter_all') : status}</button>
                         ))}
                         
                         {isVpnConnected && (
@@ -265,7 +268,7 @@ export const GroupsView: React.FC<{
                                     className={`flex items-center space-x-2 px-3 py-1 text-xs font-semibold rounded-md transition-colors ${typeFilter === 'illegal' ? 'bg-red-500/20 text-red-500 border border-red-500/30' : 'text-red-400 hover:text-red-300'}`}
                                 >
                                     <ShieldAlert className="w-3 h-3" />
-                                    <span>Illegal</span>
+                                    <span>{t('dashboard.filter_illegal')}</span>
                                 </button>
                             </>
                         )}
@@ -273,7 +276,7 @@ export const GroupsView: React.FC<{
                         <div className="h-4 w-px bg-border mx-1"></div>
                         <button onClick={() => setShowOpenOnly(!showOpenOnly)} className={`flex items-center space-x-2 px-3 py-1 text-xs font-semibold rounded-md transition-colors ${showOpenOnly ? 'bg-green-500/20 text-green-300' : 'text-muted-foreground hover:text-foreground'}`}>
                             <div className={`w-1.5 h-1.5 rounded-full ${showOpenOnly ? 'bg-green-400' : 'bg-gray-500'}`}></div>
-                            <span>Open Slots</span>
+                            <span>{t('dashboard.open_slots')}</span>
                         </button>
                     </div>
                 </div>
@@ -288,12 +291,12 @@ export const GroupsView: React.FC<{
                                     {paginatedPublicGroups.map(group => <PublicGroupCard key={group.id} group={group} onRequestToJoin={onRequestToJoin} hasSentRequest={sentRequests.has(group.id)} />)}
                                 </MotionDiv>
                             </AnimatePresence>
-                            {totalPages > 1 && (<div className="mt-6 flex items-center justify-between"><button onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1} className="px-3 py-1.5 flex items-center space-x-2 text-sm bg-secondary border border-border rounded-md disabled:opacity-50 hover:bg-muted transition-colors font-semibold"><ChevronLeft className="w-4 h-4" /><span>Prev</span></button><span className="text-sm text-muted-foreground">Page {currentPage} of {totalPages}</span><button onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage === totalPages} className="px-3 py-1.5 flex items-center space-x-2 text-sm bg-secondary border border-border rounded-md disabled:opacity-50 hover:bg-muted transition-colors font-semibold"><span>Next</span><ChevronRight className="w-4 h-4" /></button></div>)}
+                            {totalPages > 1 && (<div className="mt-6 flex items-center justify-between"><button onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1} className="px-3 py-1.5 flex items-center space-x-2 text-sm bg-secondary border border-border rounded-md disabled:opacity-50 hover:bg-muted transition-colors font-semibold"><ChevronLeft className="w-4 h-4" /><span>{t('dashboard.prev')}</span></button><span className="text-sm text-muted-foreground">{t('dashboard.page_of', String(currentPage), String(totalPages))}</span><button onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage === totalPages} className="px-3 py-1.5 flex items-center space-x-2 text-sm bg-secondary border border-border rounded-md disabled:opacity-50 hover:bg-muted transition-colors font-semibold"><span>{t('dashboard.next')}</span><ChevronRight className="w-4 h-4" /></button></div>)}
                         </>
                     ) : (
-                        <div className="text-center py-16 bg-secondary/10 rounded-xl border border-dashed border-border"><p className="text-muted-foreground">No groups match your search criteria.</p></div>
+                        <div className="text-center py-16 bg-secondary/10 rounded-xl border border-dashed border-border"><p className="text-muted-foreground">{t('dashboard.no_match')}</p></div>
                     )
-                ) : <div className="text-center py-16 bg-secondary/10 rounded-xl border border-dashed border-border"><p className="text-muted-foreground">There are no public groups available.</p></div>}
+                ) : <div className="text-center py-16 bg-secondary/10 rounded-xl border border-dashed border-border"><p className="text-muted-foreground">{t('dashboard.no_public_groups')}</p></div>}
             </div>
             
         </div>

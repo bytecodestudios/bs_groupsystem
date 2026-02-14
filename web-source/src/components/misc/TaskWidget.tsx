@@ -5,6 +5,7 @@ import { GroupTask } from '../../utils/types';
 import { useNuiEvent } from "../../hooks/useNuiEvent";
 import { fetchNui } from "../../utils/fetchNui";
 import { transformParties } from "../../utils/groupUtils";
+import { useLocale } from "../../hooks/useLocale";
 
 interface TaskWidgetProps {}
 
@@ -13,6 +14,7 @@ export const TaskWidget: React.FC<TaskWidgetProps> = () => {
   const [tasks, setTasks] = useState<GroupTask[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const citizenIdRef = useRef<string | null>(null);
+  const { t } = useLocale();
 
   const updateFromGroupData = (parties: any, currentCitizenId: string | null) => {
       const idToUse = currentCitizenId || citizenIdRef.current;
@@ -145,7 +147,7 @@ export const TaskWidget: React.FC<TaskWidgetProps> = () => {
         >
           <div className="flex items-center gap-2 mb-1">
             <div className="w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.8)]"></div>
-            <h2 className="text-xs font-semibold tracking-[0.2em] text-blue-400 uppercase">Available Tasks</h2>
+            <h2 className="text-xs font-semibold tracking-[0.2em] text-blue-400 uppercase">{t('task_widget.available_tasks')}</h2>
           </div>
           {/* Increased width from w-8 to w-24 */}
           <div className="h-[1px] w-28 bg-gradient-to-r from-blue-500 to-transparent"></div>
@@ -352,13 +354,13 @@ export const TaskWidget: React.FC<TaskWidgetProps> = () => {
                className="absolute top-[60px] left-5 text-emerald-400 flex items-center gap-1.5"
              >
                <Check size={16} />
-               <span className="font-semibold text-xs">All Tasks Completed</span>
+               <span className="font-semibold text-xs">{t('task_widget.all_completed')}</span>
              </motion.div>
           )}
 
            {tasks.length === 0 && (
              <div className="absolute top-[60px] left-0 text-slate-600 italic text-xs pl-2">
-               No active tasks.
+               {t('task_widget.no_active_tasks')}
              </div>
           )}
         </div>

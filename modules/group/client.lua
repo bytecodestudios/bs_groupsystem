@@ -210,8 +210,24 @@ AddEventHandler('onResourceStop', function(resourceName)
 	end
 end)
 
+local function sendLocaleToNUI()
+    local localeData = lib.getLocales()
+    if localeData and localeData.ui then
+        SendNUIMessage({
+            action = 'setLocale',
+            data = localeData.ui
+        })
+    end
+end
+
+CreateThread(function()
+    Wait(500)
+    sendLocaleToNUI()
+end)
+
 RegisterKeyMapping('openGroups', 'Open Groups', 'keyboard', 'F6')
 RegisterCommand('openGroups', function()
+    -- sendLocaleToNUI()
     SetNuiFocus(true, true)
     SendNUIMessage({
         action = 'setVisible',

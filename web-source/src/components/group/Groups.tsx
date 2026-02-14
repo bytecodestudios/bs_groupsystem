@@ -10,6 +10,7 @@ import { CreateGroupModal } from './Modals';
 import { SettingsTab } from './SettingsTab';
 import { useNotifications } from '../misc/Notification';
 import { transformParties } from '../../utils/groupUtils';
+import { useLocale } from '../../hooks/useLocale';
 
 const MotionDiv = motion.div;
 
@@ -134,11 +135,12 @@ const Groups = () => {
     
     const { addNotification } = useNotifications();
     const [citizenId, setCitizenId] = useState<string | null>(null);
+    const { t } = useLocale();
 
     const tabs = [
-        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { id: 'groups', label: 'Groups', icon: Users },
-        { id: 'settings', label: 'Settings', icon: Settings },
+        { id: 'dashboard', label: t('groups.tab_dashboard'), icon: LayoutDashboard },
+        { id: 'groups', label: t('groups.tab_groups'), icon: Users },
+        { id: 'settings', label: t('groups.tab_settings'), icon: Settings },
     ];
 
     const fetchGroupsData = async () => {
@@ -183,7 +185,7 @@ const Groups = () => {
             // Refresh groups to apply illegal filtering
             fetchGroupsData();
         } else if (response?.msg) {
-            addNotification('error', 'VPN Error', response.msg, 5000);
+            addNotification('error', t('groups.notif_vpn_error'), response.msg, 5000);
         }
     };
 
@@ -229,9 +231,9 @@ const Groups = () => {
             fetchGroupsData();
             setCreateModalOpen(false);
             setActiveTab('dashboard');
-            addNotification('success', 'Group Established', `Successfully created ${data.name}.`);
+            addNotification('success', t('groups.notif_group_established'), t('groups.notif_created_format', data.name));
         } else {
-            addNotification('error', 'Failed', response?.msg || 'Could not create group.');
+            addNotification('error', t('groups.notif_failed'), response?.msg || t('groups.notif_could_not_create'));
         }
     };
 
@@ -239,9 +241,9 @@ const Groups = () => {
         const response = await fetchNui<{ status: boolean, msg: string }>("bsgroup:nui:requestJoinParty", { partyId: groupId });
         if (response?.status) {
             setSentRequests(prev => new Set(prev).add(groupId));
-            addNotification('info', 'Application Sent', 'Your request to join has been submitted.');
+            addNotification('info', t('groups.notif_application_sent'), t('groups.notif_request_submitted'));
         } else {
-            addNotification('error', 'Request Failed', response?.msg || 'Could not send request.');
+            addNotification('error', t('groups.notif_request_failed'), response?.msg || t('groups.notif_could_not_send'));
         }
     };
 
@@ -261,9 +263,9 @@ const Groups = () => {
             setSelectedGroup(null);
             fetchGroupsData();
             if (isLeader) {
-                addNotification('warning', 'Group Disbanded', `${groupName} has been permanently disbanded.`);
+                addNotification('warning', t('groups.notif_group_disbanded_title'), t('groups.notif_group_disbanded_format', groupName));
             } else {
-                addNotification('info', 'Left Group', `You have left ${groupName}.`);
+                addNotification('info', t('groups.notif_left_group'), t('groups.notif_left_group_format', groupName));
             }
         }
     };

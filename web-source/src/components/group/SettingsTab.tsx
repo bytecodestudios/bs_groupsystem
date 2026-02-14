@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Power, Lock, Cpu, GlobeLock } from 'lucide-react';
+import { useLocale } from '../../hooks/useLocale';
 
 interface SettingsTabProps {
     isVpnConnected: boolean;
@@ -34,6 +35,7 @@ const Toggle: React.FC<{ label: string; checked: boolean; onChange: () => void; 
 
 export const SettingsTab: React.FC<SettingsTabProps> = ({ isVpnConnected, onVpnConnectionChange, hasAccess = true }) => {
     const [status, setStatus] = useState<'disconnected' | 'connecting' | 'connected'>(isVpnConnected ? 'connected' : 'disconnected');
+    const { t } = useLocale();
 
     useEffect(() => {
         // Sync internal state if prop changes
@@ -60,8 +62,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isVpnConnected, onVpnC
         <div className="space-y-6 max-w-3xl mx-auto py-2">
             {/* VPN Shield Section */}
             <div>
-                <h3 className="text-lg font-bold text-foreground mb-1 px-1">Network Access</h3>
-                <p className="text-sm text-muted-foreground mb-4 px-1">Manage your private network connection.</p>
+                <h3 className="text-lg font-bold text-foreground mb-1 px-1">{t('settings.network_access')}</h3>
+                <p className="text-sm text-muted-foreground mb-4 px-1">{t('settings.network_desc')}</p>
                 
                 <div className={`relative w-full border rounded-2xl p-6 flex flex-col items-center backdrop-blur-md overflow-hidden transition-all duration-500 ${!hasAccess ? 'bg-secondary/10 border-red-500/20 grayscale' : 'bg-secondary/30 border-border/50'}`}>
                     
@@ -85,14 +87,14 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isVpnConnected, onVpnC
                         </div>
 
                         <h2 className={`text-xl font-black tracking-tight mb-1 ${!hasAccess ? 'text-muted-foreground' : 'text-foreground'}`}>
-                            {!hasAccess ? 'ACCESS DENIED' : 'VPN SHIELD'}
+                            {!hasAccess ? t('settings.access_denied') : t('settings.vpn_shield')}
                         </h2>
                         <p className="text-xs text-muted-foreground text-center mb-6 max-w-[200px]">
                             {!hasAccess 
-                                ? "Hardware missing. Please connect a VPN dongle." 
+                                ? t('settings.no_hardware_msg')
                                 : (status === 'connected' 
-                                    ? "Tunnel active. Public node bypassed." 
-                                    : "Private hardware detected. Toggle to bridge.")}
+                                    ? t('settings.tunnel_active')
+                                    : t('settings.hardware_detected'))}
                         </p>
 
                         <button
@@ -139,7 +141,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isVpnConnected, onVpnC
                                 status === 'connecting' ? 'bg-amber-500 animate-pulse' : 'bg-red-500'
                             }`} />
                             <span className={`text-xs font-bold uppercase tracking-widest ${!hasAccess ? 'text-red-500/50' : (status === 'connected' ? 'text-emerald-400' : 'text-muted-foreground')}`}>
-                                {!hasAccess ? 'NO HARDWARE' : (status === 'connected' ? 'Tunnel Encrypted' : status === 'connecting' ? 'Establishing...' : 'Disconnected')}
+                                {!hasAccess ? t('settings.no_hardware') : (status === 'connected' ? t('settings.tunnel_encrypted') : status === 'connecting' ? t('settings.establishing') : t('settings.disconnected'))}
                             </span>
                         </div>
                     </div>
