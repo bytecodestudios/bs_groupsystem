@@ -1,10 +1,19 @@
 if (GetResourceState('ps-playergroups') ~= 'started') then return end
 
+--- Exports a function to ps-playergroups.
+---@param name string
+---@param cb function
+local function exportHandler(name, cb)
+    AddEventHandler(('__cfx_export_ps-playergroups_%s'):format(name), function(setCB)
+        setCB(cb)
+    end)
+end
+
 --- Returns the group leader's server source ID.
 --- ps-playergroups returns the leader's source, not citizenid.
 ---@param groupID number
 ---@return number|false leaderSource
-exports('GetGroupLeader', function(groupID)
+exportHandler('GetGroupLeader', function(groupID)
     local party = exports['cad-groupsystem']:getPartyById(groupID)
     if not party then return false end
     local player = Players:get(party.leader)
@@ -15,7 +24,7 @@ end)
 --- Returns the group's current job (status).
 ---@param groupID number
 ---@return string|false jobStatus
-exports('getJobStatus', function(groupID)
+exportHandler('getJobStatus', function(groupID)
     local job = exports['cad-groupsystem']:getPartyJob(groupID)
     if type(job) == 'table' then return false end
     return job or false
@@ -25,14 +34,14 @@ end)
 ---@param groupID number
 ---@param status string
 ---@return table result
-exports('setJobStatus', function(groupID, status)
+exportHandler('setJobStatus', function(groupID, status)
     return exports['cad-groupsystem']:setPartyJob(groupID, status)
 end)
 
 --- Returns the number of members in the group.
 ---@param groupID number
 ---@return number|false size
-exports('getGroupSize', function(groupID)
+exportHandler('getGroupSize', function(groupID)
     return exports['cad-groupsystem']:getPartySize(groupID)
 end)
 
@@ -40,7 +49,7 @@ end)
 --- ps-playergroups returns player IDs (sources), not citizenids.
 ---@param groupID number
 ---@return table|false memberSources
-exports('getGroupMembers', function(groupID)
+exportHandler('getGroupMembers', function(groupID)
     local members = exports['cad-groupsystem']:getPartyMembers(groupID)
     if not members then return false end
 
@@ -55,7 +64,7 @@ exports('getGroupMembers', function(groupID)
 end)
 
 --- Creates a blip visible to all group members.
---- Adapts ps-playergroups' flat parameter style to bs_groupsystem's blipData table.
+--- Adapts ps-playergroups' flat parameter style to groupsystem's blipData table.
 ---@param groupID number
 ---@param name string
 ---@param label string
@@ -64,7 +73,7 @@ end)
 ---@param color number
 ---@param scale number
 ---@param route boolean|nil
-exports('CreateBlipForGroup', function(groupID, name, label, coords, sprite, color, scale, route)
+exportHandler('CreateBlipForGroup', function(groupID, name, label, coords, sprite, color, scale, route)
     exports['cad-groupsystem']:createPartyBlip(groupID, name, {
         coords = coords,
         sprite = sprite or 1,
@@ -78,7 +87,7 @@ end)
 --- Removes a named blip from all group members.
 ---@param groupID number
 ---@param name string
-exports('RemoveBlipForGroup', function(groupID, name)
+exportHandler('RemoveBlipForGroup', function(groupID, name)
     exports['cad-groupsystem']:removePartyBlip(groupID, name)
 end)
 
@@ -86,7 +95,7 @@ end)
 --- Returns 0 if the player is not in any group (ps-playergroups convention).
 ---@param playerID number Server source ID
 ---@return number groupID
-exports('FindGroupByMember', function(playerID)
+exportHandler('FindGroupByMember', function(playerID)
     local player = Players:get(playerID)
     if not player then return 0 end
     local partyId = exports['cad-groupsystem']:getPlayerPartyId(player.citizenid)
@@ -97,7 +106,7 @@ end)
 ---@param groupID number
 ---@param eventname string
 ---@param args any|nil
-exports('GroupEvent', function(groupID, eventname, args)
+exportHandler('GroupEvent', function(groupID, eventname, args)
     exports['cad-groupsystem']:sendToPartyMembers(groupID, function(playerId)
         if playerId then
             if args then

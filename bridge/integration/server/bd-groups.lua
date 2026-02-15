@@ -1,9 +1,18 @@
 if (GetResourceState('bd-groups') ~= 'started') then return end
 
+--- Exports a function to bd-groups.
+---@param name string
+---@param cb function
+local function exportHandler(name, cb)
+    AddEventHandler(('__cfx_export_bd-groups_%s'):format(name), function(setCB)
+        setCB(cb)
+    end)
+end
+
 --- Returns the group leader's server source ID.
 ---@param groupId number
 ---@return number|false leaderSource
-exports('GetGroupLeader', function(groupId)
+exportHandler('GetGroupLeader', function(groupId)
     local party = exports['cad-groupsystem']:getPartyById(groupId)
     if not party then return false end
     local player = Players:get(party.leader)
@@ -14,7 +23,7 @@ end)
 --- Returns the group's current job status.
 ---@param groupId number
 ---@return string|false jobStatus
-exports('GetJobStatus', function(groupId)
+exportHandler('GetJobStatus', function(groupId)
     local job = exports['cad-groupsystem']:getPartyJob(groupId)
     if type(job) == 'table' then return false end
     return job or false
@@ -24,14 +33,14 @@ end)
 ---@param groupId number
 ---@param status string
 ---@return table result
-exports('SetJobStatus', function(groupId, status)
+exportHandler('SetJobStatus', function(groupId, status)
     return exports['cad-groupsystem']:setPartyJob(groupId, status)
 end)
 
 --- Returns the total number of members in a group.
 ---@param groupId number
 ---@return number|false memberCount
-exports('GetGroupMembersCount', function(groupId)
+exportHandler('GetGroupMembersCount', function(groupId)
     return exports['cad-groupsystem']:getPartySize(groupId)
 end)
 
@@ -39,7 +48,7 @@ end)
 --- bd-groups returns member source IDs.
 ---@param groupId number
 ---@return table|false memberSources
-exports('GetGroupMembers', function(groupId)
+exportHandler('GetGroupMembers', function(groupId)
     local members = exports['cad-groupsystem']:getPartyMembers(groupId)
     if not members then return false end
 
@@ -57,7 +66,7 @@ end)
 ---@param groupId number
 ---@param playerSource number Server source ID
 ---@return boolean isLeader
-exports('IsGroupLeader', function(groupId, playerSource)
+exportHandler('IsGroupLeader', function(groupId, playerSource)
     local player = Players:get(playerSource)
     if not player then return false end
     return exports['cad-groupsystem']:isPartyLeader(groupId, player.citizenid)
@@ -67,7 +76,7 @@ end)
 --- Returns -1 if the player is not in any group (bd-groups convention).
 ---@param playerSource number Server source ID
 ---@return number groupId
-exports('FindGroupByMember', function(playerSource)
+exportHandler('FindGroupByMember', function(playerSource)
     local player = Players:get(playerSource)
     if not player then return -1 end
     local partyId = exports['cad-groupsystem']:getPlayerPartyId(player.citizenid)
@@ -78,7 +87,7 @@ end)
 ---@param groupId number
 ---@param blipName string
 ---@param blipData table { coords, color, alpha, sprite, scale, label, route, routeColor }
-exports('CreateBlipForGroup', function(groupId, blipName, blipData)
+exportHandler('CreateBlipForGroup', function(groupId, blipName, blipData)
     exports['cad-groupsystem']:createPartyBlip(groupId, blipName, {
         coords = blipData.coords,
         sprite = blipData.sprite or 1,
@@ -92,13 +101,13 @@ end)
 --- Removes a blip previously created for a group.
 ---@param groupId number
 ---@param blipName string
-exports('RemoveBlipForGroup', function(groupId, blipName)
+exportHandler('RemoveBlipForGroup', function(groupId, blipName)
     exports['cad-groupsystem']:removePartyBlip(groupId, blipName)
 end)
 
 --- Deletes / disbands a group.
 ---@param groupId number
-exports('DestroyGroup', function(groupId)
+exportHandler('DestroyGroup', function(groupId)
     local party = exports['cad-groupsystem']:getPartyById(groupId)
     if not party then return end
     exports['cad-groupsystem']:disbandParty(nil, groupId, party.leader)
@@ -108,7 +117,7 @@ end)
 ---@param groupId number
 ---@param message string
 ---@param timeout number|nil Duration in ms
-exports('NotifyGroup', function(groupId, message, timeout)
+exportHandler('NotifyGroup', function(groupId, message, timeout)
     exports['cad-groupsystem']:sendPartyNotification(groupId, {
         title = 'Group',
         description = message,
@@ -120,7 +129,7 @@ end)
 --- Checks if a group with the given ID exists.
 ---@param groupId number
 ---@return boolean exists
-exports('DoesGroupExist', function(groupId)
+exportHandler('DoesGroupExist', function(groupId)
     return exports['cad-groupsystem']:getPartyById(groupId) ~= nil
 end)
 
