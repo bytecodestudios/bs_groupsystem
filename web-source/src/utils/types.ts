@@ -1,4 +1,3 @@
-// FIX: Import 'React' and 'LucideIcon' types to resolve TypeScript errors.
 import type React from 'react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -22,7 +21,7 @@ export interface NetworkStatus {
 
 // Groups App
 export interface Member {
-  id: number;
+  id: string;
   name:string;
   isOnline: boolean;
 }
@@ -44,7 +43,7 @@ export interface Group {
   id: string;
   name: string;
   joinType: 'Request to Join' | 'Invite Only' | 'Closed';
-  leader: number; // member id
+  leader: string;
   members: Member[];
   maxMembers: number;
   status: 'Recruiting' | 'Full' | 'Active';

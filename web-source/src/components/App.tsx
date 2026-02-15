@@ -2,18 +2,23 @@ import React, { useState } from 'react';
 import Groups from './group/Groups';
 import { motion, AnimatePresence } from "framer-motion"
 import { X } from 'lucide-react';
-import { NotificationProvider } from './misc/Notification';
 import { fetchNui } from '../utils/fetchNui';
 import { useNuiEvent } from '../hooks/useNuiEvent';
 import { TaskWidget } from './misc/TaskWidget';
+import { useNotifications } from './misc/Notification';
 import { useLocale } from '../hooks/useLocale';
 
 function App() {
   const [visible, setVisible] = useState(false);
+  const { addNotification } = useNotifications();
   const { t } = useLocale();
 
   useNuiEvent('setVisible', (data: boolean) => {
     setVisible(data);
+  });
+
+  useNuiEvent('notification', (data: { type: any, title: string, message: string }) => {
+    addNotification(data.type, data.title, data.message);
   });
 
   const closeUI = async () => {
@@ -23,7 +28,6 @@ function App() {
 
   return (
     <motion.div className="h-screen w-screen antialiased relative">
-      <NotificationProvider>
         {/* Task Widget */}
         <TaskWidget />
 
@@ -44,7 +48,7 @@ function App() {
                   </div>
                   <div className="w-4 h-4 bg-gradient-to-br from-yellow-500 to-yellow-500 rounded-full" />
                   <div className="w-4 h-4 bg-gradient-to-br from-emerald-500 to-green-500 rounded-full" />
-                  <span className="text-md font-medium text-white">{t('app.title')}</span>
+                  <span className="text-md font-medium text-white">{t('ui.app.title')}</span>
                 </div>
               </div>
 
@@ -54,7 +58,6 @@ function App() {
             </motion.div>
           )}
         </AnimatePresence>
-      </NotificationProvider>
     </motion.div>
   );
 }

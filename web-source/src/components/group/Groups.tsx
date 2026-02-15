@@ -138,9 +138,9 @@ const Groups = () => {
     const { t } = useLocale();
 
     const tabs = [
-        { id: 'dashboard', label: t('groups.tab_dashboard'), icon: LayoutDashboard },
-        { id: 'groups', label: t('groups.tab_groups'), icon: Users },
-        { id: 'settings', label: t('groups.tab_settings'), icon: Settings },
+        { id: 'dashboard', label: t('ui.groups.tab_dashboard'), icon: LayoutDashboard },
+        { id: 'groups', label: t('ui.groups.tab_groups'), icon: Users },
+        { id: 'settings', label: t('ui.groups.tab_settings'), icon: Settings },
     ];
 
     const fetchGroupsData = async () => {
@@ -185,7 +185,7 @@ const Groups = () => {
             // Refresh groups to apply illegal filtering
             fetchGroupsData();
         } else if (response?.msg) {
-            addNotification('error', t('groups.notif_vpn_error'), response.msg, 5000);
+            addNotification('error', t('ui.groups.notif_vpn_error'), response.msg, 5000);
         }
     };
 
@@ -231,9 +231,9 @@ const Groups = () => {
             fetchGroupsData();
             setCreateModalOpen(false);
             setActiveTab('dashboard');
-            addNotification('success', t('groups.notif_group_established'), t('groups.notif_created_format', data.name));
+            addNotification('success', t('ui.groups.notif_group_established'), t('ui.groups.notif_created_format', data.name));
         } else {
-            addNotification('error', t('groups.notif_failed'), response?.msg || t('groups.notif_could_not_create'));
+            addNotification('error', t('ui.groups.notif_failed'), response?.msg || t('ui.groups.notif_could_not_create'));
         }
     };
 
@@ -241,9 +241,9 @@ const Groups = () => {
         const response = await fetchNui<{ status: boolean, msg: string }>("bsgroup:nui:requestJoinParty", { partyId: groupId });
         if (response?.status) {
             setSentRequests(prev => new Set(prev).add(groupId));
-            addNotification('info', t('groups.notif_application_sent'), t('groups.notif_request_submitted'));
+            addNotification('info', t('ui.groups.notif_application_sent'), t('ui.groups.notif_request_submitted'));
         } else {
-            addNotification('error', t('groups.notif_request_failed'), response?.msg || t('groups.notif_could_not_send'));
+            addNotification('error', t('ui.groups.notif_request_failed'), response?.msg || t('ui.groups.notif_could_not_send'));
         }
     };
 
@@ -263,9 +263,9 @@ const Groups = () => {
             setSelectedGroup(null);
             fetchGroupsData();
             if (isLeader) {
-                addNotification('warning', t('groups.notif_group_disbanded_title'), t('groups.notif_group_disbanded_format', groupName));
+                addNotification('warning', t('ui.groups.notif_group_disbanded_title'), t('ui.groups.notif_group_disbanded_format', groupName));
             } else {
-                addNotification('info', t('groups.notif_left_group'), t('groups.notif_left_group_format', groupName));
+                addNotification('info', t('ui.groups.notif_left_group'), t('ui.groups.notif_left_group_format', groupName));
             }
         }
     };

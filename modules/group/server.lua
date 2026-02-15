@@ -449,43 +449,6 @@ local function timedOutPlayer(citizenid)
     else removePlayerFromParty(partyId, citizenid) SendLog(nil, 'party', 'partyTimedOut', citizenid..' was timedout and was removed from party') end
 end
 
-RegisterNetEvent('bs_groupsystem:server:leaveParty', function()
-    local src = source
-    local player = Players:get(src)
-    if not player then return end
-    local citizenid = player.citizenid
-    local partyId = getPlayerPartyId(citizenid)
-    if not partyId then return end
-    if not Config.AllowLeavePartyDuringJob and getPartyJob(partyId) then
-        return TriggerClientEvent('bs_groupsystem:client:notification', src, {icon = locale('party_notify_icon'), title = locale('party_notify_title'), description = locale('party_cannot_leave_ontask')})
-    end
-    local result = removePlayerFromParty(partyId, citizenid)
-    if not result.status then TriggerClientEvent('bs_groupsystem:client:notification', src, {icon = locale('party_notify_icon'), title = locale('party_notify_title'), description = result.msg}) end
-end)
-
-RegisterNetEvent('bs_groupsystem:server:kickMember', function(data)
-    local src = source
-    local player = Players:get(src)
-    if not player then return end
-    local targetCitizenid = data.citizenid
-    local partyId = getPlayerPartyId(targetCitizenid)
-    if not partyId then return end
-    local sourceCitizenId = player.citizenid
-    local result = kickPlayerFromParty(partyId, targetCitizenid, sourceCitizenId)
-    if not result.status then TriggerClientEvent('bs_groupsystem:client:notification', src, {icon = locale('party_notify_icon'), title = locale('party_notify_title'), description = result.msg}) end
-end)
-
-RegisterNetEvent('bs_groupsystem:server:requestDisbandParty', function()
-    local src = source
-    local player = Players:get(src)
-    if not player then return end
-    local citizenid = player.citizenid
-    local partyId = getPlayerPartyId(citizenid)
-    if not partyId then return end
-    local result = disbandParty(src, partyId, citizenid)
-    if not result.status then TriggerClientEvent('bs_groupsystem:client:notification', src, {icon = locale('party_notify_icon'), title = locale('party_notify_title'), description = result.msg}) end
-end)
-
 RegisterNetEvent('bs_groupsystem:server:initialised', function(player)
     local src = player.source
     local citizenid = player.citizenid
@@ -607,6 +570,7 @@ lib.callback.register('bsgroup:nui:server:processRequest', function(source, data
     end
 
     if data.action == 'accept' then
+        if not partyId then return { status = false, msg = "Invalid party ID" } end
         local result = addPlayerToParty(partyId, data.requestId, data.requestName)
         if result.status then
             updatePartyData(party.members, 'refreshParties')
@@ -616,4 +580,56 @@ lib.callback.register('bsgroup:nui:server:processRequest', function(source, data
 
     updatePartyData(party.members, 'refreshParties')
     return { status = true, msg = "Request declined", group = party }
+end)
+
+lib.callback.register('bs_groupsystem:server:kickMember', function(source, data)
+    local player = Players:get(source)
+    if not player then return { status = false, msg = "Player not found" } end
+    local targetCitizenid = data.memberId or data.citizenid
+    local partyId = getPlayerPartyId(targetCitizenid)
+    if not partyId then return { status = false, msg = "Party not found" } end
+    local sourceCitizenId = player.citizenid
+    local result = kickPlayerFromParty(partyId, targetCitizenid, sourceCitizenId)
+    if result.status then
+        result.group = parties[partyId]
+    end
+    return result
+end)
+
+lib.callback.register('bs_groupsystem:server:leaveParty', function(source)
+    local player = Players:get(source)
+    if not player then return { status = false, msg = "Player not found" } end
+    local citizenid = player.citizenid
+    local partyId = getPlayerPartyId(citizenid)
+    if not partyId then return { status = false, msg = "Party not found" } end
+    local result = removePlayerFromParty(partyId, citizenid)
+    return result
+end)
+
+lib.callback.register('bs_groupsystem:server:requestDisbandParty', function(source)
+    local player = Players:get(source)
+    if not player then return { status = false, msg = "Player not found" } end
+    local citizenid = player.citizenid
+    local partyId = getPlayerPartyId(citizenid)
+    if not partyId then return { status = false, msg = "Party not found" } end
+    local result = disbandParty(source, partyId, citizenid)
+    return result
+end)
+
+lib.callback.register('bs_groupsystem:server:updateTasks', function(source, data)
+    local player = Players:get(source)
+    if not player then return { status = false, msg = "Player not found" } end
+    local citizenid = player.citizenid
+    local partyId = getPlayerPartyId(citizenid)
+    if not partyId then return { status = false, msg = "Party not found" } end
+
+    if not isPartyLeader(partyId, citizenid) then
+        return { status = false, msg = "Leader only" }
+    end
+
+    local result = updatePartyTasks(partyId, data.tasks)
+    if result.status then
+        result.group = parties[partyId]
+    end
+    return result
 end)

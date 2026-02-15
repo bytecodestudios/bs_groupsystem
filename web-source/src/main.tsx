@@ -6,6 +6,7 @@ import { isEnvBrowser } from "./utils/misc";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { fas } from "@fortawesome/free-solid-svg-icons";
 import { useLocaleListener } from "./hooks/useLocale";
+import { NotificationProvider } from "./components/misc/Notification";
 
 library.add(fas);
 
@@ -21,14 +22,17 @@ if (isEnvBrowser()) {
     root!.style.userSelect = "none";
 }
 
-// Wrapper component to initialize locale listener
-const AppWithLocale = () => {
+const Application = () => {
     useLocaleListener();
-    return <App />;
+    return (
+        <NotificationProvider>
+            <App />
+        </NotificationProvider>
+    );
 };
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
-        <AppWithLocale />
+        <Application />
     </React.StrictMode>
 );

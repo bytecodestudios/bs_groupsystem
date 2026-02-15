@@ -147,7 +147,7 @@ export const TaskWidget: React.FC<TaskWidgetProps> = () => {
         >
           <div className="flex items-center gap-2 mb-1">
             <div className="w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.8)]"></div>
-            <h2 className="text-xs font-semibold tracking-[0.2em] text-blue-400 uppercase">{t('task_widget.available_tasks')}</h2>
+            <h2 className="text-xs font-semibold tracking-[0.2em] text-blue-400 uppercase">{t('ui.task_widget.available_tasks')}</h2>
           </div>
           {/* Increased width from w-8 to w-24 */}
           <div className="h-[1px] w-28 bg-gradient-to-r from-blue-500 to-transparent"></div>
@@ -354,13 +354,13 @@ export const TaskWidget: React.FC<TaskWidgetProps> = () => {
                className="absolute top-[60px] left-5 text-emerald-400 flex items-center gap-1.5"
              >
                <Check size={16} />
-               <span className="font-semibold text-xs">{t('task_widget.all_completed')}</span>
+               <span className="font-semibold text-xs">{t('ui.task_widget.all_completed')}</span>
              </motion.div>
           )}
 
            {tasks.length === 0 && (
              <div className="absolute top-[60px] left-0 text-slate-600 italic text-xs pl-2">
-               {t('task_widget.no_active_tasks')}
+               {t('ui.task_widget.no_active_tasks')}
              </div>
           )}
         </div>

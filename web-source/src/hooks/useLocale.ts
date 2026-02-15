@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { useNuiEvent } from './useNuiEvent';
-import { useEffect } from 'react';
 
 interface LocaleState {
     locale: Record<string, string>;

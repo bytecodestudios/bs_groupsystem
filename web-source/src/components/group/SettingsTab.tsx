@@ -62,8 +62,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isVpnConnected, onVpnC
         <div className="space-y-6 max-w-3xl mx-auto py-2">
             {/* VPN Shield Section */}
             <div>
-                <h3 className="text-lg font-bold text-foreground mb-1 px-1">{t('settings.network_access')}</h3>
-                <p className="text-sm text-muted-foreground mb-4 px-1">{t('settings.network_desc')}</p>
+                <h3 className="text-lg font-bold text-foreground mb-1 px-1">{t('ui.settings.network_access')}</h3>
+                <p className="text-sm text-muted-foreground mb-4 px-1">{t('ui.settings.network_desc')}</p>
                 
                 <div className={`relative w-full border rounded-2xl p-6 flex flex-col items-center backdrop-blur-md overflow-hidden transition-all duration-500 ${!hasAccess ? 'bg-secondary/10 border-red-500/20 grayscale' : 'bg-secondary/30 border-border/50'}`}>
                     
@@ -87,14 +87,14 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isVpnConnected, onVpnC
                         </div>
 
                         <h2 className={`text-xl font-black tracking-tight mb-1 ${!hasAccess ? 'text-muted-foreground' : 'text-foreground'}`}>
-                            {!hasAccess ? t('settings.access_denied') : t('settings.vpn_shield')}
+                            {!hasAccess ? t('ui.settings.access_denied') : t('ui.settings.vpn_shield')}
                         </h2>
                         <p className="text-xs text-muted-foreground text-center mb-6 max-w-[200px]">
                             {!hasAccess 
-                                ? t('settings.no_hardware_msg')
+                                ? t('ui.settings.no_hardware_msg')
                                 : (status === 'connected' 
-                                    ? t('settings.tunnel_active')
-                                    : t('settings.hardware_detected'))}
+                                    ? t('ui.settings.tunnel_active')
+                                    : t('ui.settings.hardware_detected'))}
                         </p>
 
                         <button
@@ -141,7 +141,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isVpnConnected, onVpnC
                                 status === 'connecting' ? 'bg-amber-500 animate-pulse' : 'bg-red-500'
                             }`} />
                             <span className={`text-xs font-bold uppercase tracking-widest ${!hasAccess ? 'text-red-500/50' : (status === 'connected' ? 'text-emerald-400' : 'text-muted-foreground')}`}>
-                                {!hasAccess ? t('settings.no_hardware') : (status === 'connected' ? t('settings.tunnel_encrypted') : status === 'connecting' ? t('settings.establishing') : t('settings.disconnected'))}
+                                {!hasAccess ? t('ui.settings.no_hardware') : (status === 'connected' ? t('ui.settings.tunnel_encrypted') : status === 'connecting' ? t('ui.settings.establishing') : t('ui.settings.disconnected'))}
                             </span>
                         </div>
                     </div>

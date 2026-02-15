@@ -64,19 +64,24 @@ RegisterNUICallback('bsgroup:nui:requestJoinParty', function(data, cb)
     cb(result)
 end)
 
-RegisterNUICallback('bsgroup:nui:disbandParty', function(_, cb)
-    TriggerServerEvent('bs_groupsystem:server:requestDisbandParty')
-    cb({ status = true })
+RegisterNUICallback('bsgroup:nui:disbandParty', function(data, cb)
+    local response = lib.callback.await('bs_groupsystem:server:requestDisbandParty', false, data)
+    cb(response)
 end)
 
-RegisterNUICallback('bsgroup:nui:leaveParty', function(_, cb)
-    TriggerServerEvent('bs_groupsystem:server:leaveParty')
-    cb({ status = true })
+RegisterNUICallback('bsgroup:nui:leaveParty', function(data, cb)
+    local response = lib.callback.await('bs_groupsystem:server:leaveParty', false, data)
+    cb(response)
 end)
 
 RegisterNUICallback('bsgroup:nui:kickMember', function(data, cb)
-    TriggerServerEvent('bs_groupsystem:server:kickMember', data)
-    cb({ status = true })
+    local response = lib.callback.await('bs_groupsystem:server:kickMember', false, data)
+    cb(response)
+end)
+
+RegisterNUICallback('bsgroup:nui:updateTasks', function(data, cb)
+    local response = lib.callback.await('bs_groupsystem:server:updateTasks', false, data)
+    cb(response)
 end)
 
 RegisterNUICallback('bsgroup:nui:fetchSingleGroup', function(data, cb)
@@ -199,6 +204,24 @@ RegisterNetEvent('bs_groupsystem:client:updatePhoneData', function(data)
     end
 end)
 
+RegisterNetEvent('bs_groupsystem:client:notification', function(data)
+    -- lib.notify({
+    --     title = data.title or 'Group Notification',
+    --     description = data.description or data.msg,
+    --     type = data.type or 'info',
+    --     icon = data.icon or 'users'
+    -- })
+
+    SendNUIMessage({
+        action = 'notification',
+        data = {
+            type = data.type or 'info',
+            title = data.title or 'Group',
+            message = data.description or data.msg
+        }
+    })
+end)
+
 AddEventHandler('onResourceStop', function(resourceName)
     if resourceName == GetCurrentResourceName() then
         removeAllGroupBlips()
@@ -207,12 +230,12 @@ end)
 
 local function sendLocaleToNUI()
     local localeData = lib.getLocales()
-    if localeData and localeData.ui then
-        SendNUIMessage({
-            action = 'setLocale',
-            data = localeData.ui
-        })
-    end
+    if not localeData then return end
+
+    SendNUIMessage({
+        action = 'setLocale',
+        data = localeData
+    })
 end
 
 CreateThread(function()
@@ -222,7 +245,6 @@ end)
 
 RegisterKeyMapping('openGroups', 'Open Groups', 'keyboard', 'F6')
 RegisterCommand('openGroups', function()
-    -- sendLocaleToNUI()
     SetNuiFocus(true, true)
     SendNUIMessage({
         action = 'setVisible',
