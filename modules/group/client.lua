@@ -109,6 +109,36 @@ RegisterNUICallback('bsgroup:nui:closeUI', function(_, cb)
     cb('ok')
 end)
 
+---Sets the locales of the UI
+local function setLocales()
+    local localeData = lib.getLocales()
+    if not localeData then return end
+
+    local appData = {
+        action = 'setLocale',
+        data = localeData
+    }
+    if SendAppMessage then
+        SendAppMessage(appData)
+    else
+        SendNUIMessage(appData)
+    end
+end
+
+---Sets the visibility of the UI
+---@param bool boolean Whether to show the UI
+local function setVisible(bool)
+    local appData = {
+        action = "setVisible",
+        data = bool
+    }
+    if SendAppMessage then
+        SendAppMessage(appData)
+    else
+        SendNUIMessage(appData)
+    end
+end
+
 ---Locates blip by the name of the group blip and returns its index in the table
 ---@param name string The name of the blip to find
 ---@return number|false index The index of the found blip or false if not found
@@ -197,10 +227,15 @@ RegisterNetEvent('bs_groupsystem:client:party:removeAllBlips', removeAllGroupBli
 
 RegisterNetEvent('bs_groupsystem:client:updatePhoneData', function(data)
     if data and data.app == 'party' then
-        SendNUIMessage({
+        local appData = {
             action = data.action,
             data = data
-        })
+        }
+        if SendAppMessage then
+            SendAppMessage(appData)
+        else
+            SendNUIMessage(appData)
+        end
     end
 end)
 
@@ -222,32 +257,26 @@ RegisterNetEvent('bs_groupsystem:client:notification', function(data)
     })
 end)
 
+RegisterNetEvent("bs_groupsystem:client:toggle", function(bool)
+    setVisible(bool)
+    if bool then setLocales() end
+end)
+
 AddEventHandler('onResourceStop', function(resourceName)
     if resourceName == GetCurrentResourceName() then
         removeAllGroupBlips()
     end
 end)
 
-local function sendLocaleToNUI()
-    local localeData = lib.getLocales()
-    if not localeData then return end
-
-    SendNUIMessage({
-        action = 'setLocale',
-        data = localeData
-    })
-end
-
 CreateThread(function()
     Wait(500)
-    sendLocaleToNUI()
+    setLocales()
 end)
 
+if SendAppMessage then return end
 RegisterKeyMapping('openGroups', 'Open Groups', 'keyboard', 'F6')
 RegisterCommand('openGroups', function()
     SetNuiFocus(true, true)
-    SendNUIMessage({
-        action = 'setVisible',
-        data = true
-    })
+    setVisible(true)
+    setLocales()
 end, false)

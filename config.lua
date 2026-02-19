@@ -21,5 +21,11 @@ Config.AppSettings = {
     icon = "Users",
     isVisible = function ()
         return true
-    end
+    end,
+    onAppOpen = function()
+        TriggerEvent("bs_groupsystem:client:toggle", true)
+    end,
+    onAppClose = function()
+        TriggerEvent("bs_groupsystem:client:toggle", false)
+    end,
 }

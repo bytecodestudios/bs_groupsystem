@@ -29,7 +29,7 @@ export async function fetchNui<T = unknown>(
 
   const resourceName = (window as any).GetParentResourceName
     ? (window as any).GetParentResourceName()
-    : "nui-frame-app";
+    : "cad-groupsystem";
 
   const resp = await fetch(`https://${resourceName}/${eventName}`, options);
 
