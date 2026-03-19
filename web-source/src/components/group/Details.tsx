@@ -1,10 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Bell, ClipboardEdit, LogOut, ArrowLeft, Trash2 } from 'lucide-react';
+import { Users, Bell, ClipboardEdit, LogOut, ArrowLeft, Trash2, UserX } from 'lucide-react';
 import { Group } from '../../utils/types';
 import { MembersTab, RequestsTab, TasksTab } from './GroupTabs';
-import { ConfirmationModal } from './Modals';
+import { ConfirmationModal, InvitePlayerModal } from './Modals';
 import { useLocale } from '../../hooks/useLocale';
+import { fetchNui } from '../../utils/fetchNui';
+import { transformSingleGroup } from '../../utils/groupUtils';
 
 const MotionDiv = motion.div;
 
@@ -18,12 +20,17 @@ const GroupDetails: React.FC<{ group: Group, onBack: () => void, onUpdateGroup: 
         return 'members';
     });
     const [isConfirmModalOpen, setConfirmModalOpen] = useState(false);
+    const [isInviteModalOpen, setInviteModalOpen] = useState(false);
+    const [kickConfirmFor, setKickConfirmFor] = useState<{ id: string, name: string } | null>(null);
 
     const tabs = useMemo(() => {
         let baseTabs = [{ id: 'members', name: t('ui.details.tab_members'), icon: Users }, { id: 'partyTasks', name: t('ui.details.tab_group_tasks'), icon: ClipboardEdit }];
-        if (isLeader) baseTabs.splice(1, 0, { id: 'requests', name: t('ui.details.tab_requests'), icon: Bell });
+        if (isLeader && group.joinType !== 'Closed') {
+            const tabName = group.joinType === 'Invite Only' ? 'Invitations' : t('ui.details.tab_requests');
+            baseTabs.splice(1, 0, { id: 'requests', name: tabName, icon: Bell });
+        }
         return baseTabs;
-    }, [isLeader, t]);
+    }, [isLeader, group.joinType, t]);
 
     return (
         <div className="h-full flex flex-col bg-background rounded-b-2xl">
@@ -53,8 +60,58 @@ const GroupDetails: React.FC<{ group: Group, onBack: () => void, onUpdateGroup: 
                 </div>
                 <button onClick={() => setConfirmModalOpen(true)} className={`flex items-center space-x-2 px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors ${isLeader ? 'bg-red-600/20 text-red-300 hover:bg-red-600/30' : 'bg-secondary hover:bg-muted'}`}><LogOut className="w-4 h-4" /><span>{isLeader ? t('ui.details.disband_group') : t('ui.details.leave_group')}</span></button>
             </div>
-            <main className="flex-grow overflow-y-auto bg-black/20"><AnimatePresence mode="wait"><MotionDiv key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="p-6">{activeTab === 'members' && <MembersTab group={group} onUpdateGroup={onUpdateGroup} citizenId={citizenId} />}{activeTab === 'requests' && <RequestsTab group={group} onUpdateGroup={onUpdateGroup} citizenId={citizenId} />}{activeTab === 'partyTasks' && <TasksTab group={group} onUpdateGroup={onUpdateGroup} citizenId={citizenId} />}</MotionDiv></AnimatePresence></main>
+            <main className="flex-grow overflow-y-auto bg-black/20">
+                <AnimatePresence mode="wait">
+                    <MotionDiv key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="p-6">
+                        {activeTab === 'members' && (
+                            <MembersTab 
+                                group={group} 
+                                onUpdateGroup={onUpdateGroup} 
+                                citizenId={citizenId} 
+                                onOpenInvite={() => setInviteModalOpen(true)}
+                                onConfirmKick={(member) => setKickConfirmFor({ id: member.id, name: member.name })}
+                            />
+                        )}
+                        {activeTab === 'requests' && <RequestsTab group={group} onUpdateGroup={onUpdateGroup} citizenId={citizenId} />}
+                        {activeTab === 'partyTasks' && <TasksTab group={group} onUpdateGroup={onUpdateGroup} citizenId={citizenId} />}
+                    </MotionDiv>
+                </AnimatePresence>
+            </main>
+            
             <AnimatePresence>{isConfirmModalOpen && <ConfirmationModal title={isLeader ? t('ui.details.disband_title') : t('ui.details.leave_title')} message={<>{t('ui.details.confirm_action_prefix')} {isLeader ? t('ui.details.disband_action') : t('ui.details.leave_action')} <span className="font-semibold text-foreground">{group.name}</span>{t('ui.details.cannot_be_undone')}</>} confirmText={isLeader ? t('ui.details.disband_confirm') : t('ui.details.leave_confirm')} confirmClass={isLeader ? "bg-red-600 hover:bg-red-700" : "bg-red-600 hover:bg-red-700"} onConfirm={() => { onDisbandOrLeave(); setConfirmModalOpen(false); }} onCancel={() => setConfirmModalOpen(false)} Icon={Trash2} />}</AnimatePresence>
+            
+            <AnimatePresence>
+                {isInviteModalOpen && (
+                    <InvitePlayerModal 
+                        onClose={() => setInviteModalOpen(false)} 
+                        onUpdateGroup={onUpdateGroup}
+                        citizenId={citizenId}
+                    />
+                )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {kickConfirmFor && (
+                    <ConfirmationModal 
+                        title={t('ui.group_tabs.kick_title')} 
+                        message={<>{t('ui.group_tabs.kick_message', kickConfirmFor.name)}</>} 
+                        confirmText={t('ui.group_tabs.confirm_kick')} 
+                        confirmClass="bg-red-600 hover:bg-red-700" 
+                        onConfirm={async () => {
+                            try {
+                                const response = await fetchNui<any>('bsgroup:nui:kickMember', { groupId: group.id, memberId: kickConfirmFor.id });
+                                if (response?.status && response.group && citizenId) {
+                                  onUpdateGroup(transformSingleGroup(response.group, citizenId));
+                                }
+                            } finally {
+                                setKickConfirmFor(null);
+                            }
+                        }} 
+                        onCancel={() => setKickConfirmFor(null)} 
+                        Icon={UserX} 
+                    />
+                )}
+            </AnimatePresence>
         </div>
     );
 };

@@ -4,7 +4,7 @@ lua54 'yes'
 
 author 'Cadburry & Guardian & Snappy (Bytecode Studios)'
 description 'Group System with tasks list'
-version '0.6'
+version '0.7'
 
 shared_script {
     '@ox_lib/init.lua',

@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, FileText, Users, Globe, Lock, Mail, ShieldAlert } from 'lucide-react';
+import { X, FileText, Users, Globe, Lock, Mail, ShieldAlert, UserPlus, Send, RefreshCw } from 'lucide-react';
+import { fetchNui } from '../../utils/fetchNui';
+import { transformSingleGroup } from '../../utils/groupUtils';
+import { useNotifications } from '../misc/Notification';
 import { Group } from '../../utils/types';
 import { useLocale } from '../../hooks/useLocale';
 
@@ -112,6 +115,128 @@ export const CreateGroupModal: React.FC<{ onClose: () => void, onCreate: (data: 
                         </MotionDiv>
                     )}
                 </AnimatePresence>
+            </MotionDiv>
+        </MotionDiv>
+    );
+};
+
+export const InvitePlayerModal: React.FC<{ onClose: () => void, onUpdateGroup: (group: Group) => void, citizenId: string | null }> = ({ onClose, onUpdateGroup, citizenId }) => {
+    const [players, setPlayers] = useState<{ source: number; name: string; citizenid: string }[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [inviting, setInviting] = useState<number | null>(null);
+    const { t } = useLocale();
+    const { addNotification } = useNotifications();
+
+    const fetchPlayers = async () => {
+        setLoading(true);
+        try {
+            const result = await fetchNui<any>('bsgroup:nui:getNearbyPlayers');
+            if (result) setPlayers(result);
+        } catch (err) {
+            console.error("Failed to fetch nearby players:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    React.useEffect(() => {
+        fetchPlayers();
+    }, []);
+
+    const handleInvite = async (source: number, name: string) => {
+        setInviting(source);
+        try {
+            const response = await fetchNui<any>('bsgroup:nui:invitePlayer', { targetSource: source });
+            if (response.status) {
+                addNotification('success', "Invitation Sent", `A group invitation has been sent to ${name}. Waiting for response...`);
+                if (response.group && citizenId) {
+                    onUpdateGroup(transformSingleGroup(response.group, citizenId));
+                }
+            } else {
+                addNotification('error', "Failed to Invite", response.msg || "An error occurred");
+            }
+        } catch (err) {
+            console.error("Invite failed:", err);
+        } finally {
+            setInviting(null);
+        }
+    };
+
+    return (
+        <MotionDiv initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <MotionDiv initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="relative bg-card border border-border rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+                <div className="flex justify-between items-center p-6 border-b border-border bg-gradient-to-r from-emerald-600/10 to-transparent">
+                    <h3 className="text-lg font-bold text-foreground flex items-center">
+                        <UserPlus className="w-5 h-5 mr-2 text-emerald-400" />
+                        Invite Nearby Player
+                    </h3>
+                    <button onClick={onClose} className="p-1.5 rounded-full hover:bg-muted transition-colors">
+                        <X className="w-5 h-5 text-muted-foreground" />
+                    </button>
+                </div>
+
+                <div className="p-6 max-h-[400px] overflow-y-auto space-y-4">
+                    <div className="flex justify-between items-center">
+                        <p className="text-sm text-muted-foreground">Nearby players (within 15m)</p>
+                        <button onClick={fetchPlayers} className={`p-1.5 rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground transition-all ${loading ? 'animate-spin' : ''}`}>
+                            <RefreshCw className="w-4 h-4" />
+                        </button>
+                    </div>
+
+                    {loading ? (
+                        <div className="py-12 flex flex-col items-center justify-center space-y-4">
+                           <div className="w-10 h-10 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
+                           <p className="text-sm text-muted-foreground animate-pulse">Scanning area...</p>
+                        </div>
+                    ) : players.length > 0 ? (
+                        <ul className="space-y-2">
+                            {players.map(player => (
+                                <MotionDiv 
+                                    key={player.source} 
+                                    initial={{ opacity: 0, x: -10 }} 
+                                    animate={{ opacity: 1, x: 0 }}
+                                    className="flex items-center justify-between p-3 bg-secondary/30 border border-border rounded-xl group hover:border-emerald-500/30 transition-colors"
+                                >
+                                    <div className="flex items-center space-x-3">
+                                        <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center font-bold text-foreground border border-border group-hover:border-emerald-500/50 transition-colors">
+                                            {player.name.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-foreground">{player.name}</p>
+                                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">ID: {player.source}</p>
+                                        </div>
+                                    </div>
+                                    <button 
+                                        onClick={() => handleInvite(player.source, player.name)}
+                                        disabled={inviting !== null}
+                                        className={`p-2 rounded-lg transition-all ${
+                                            inviting === player.source 
+                                                ? 'bg-emerald-500 text-white' 
+                                                : 'bg-emerald-600/10 text-emerald-500 hover:bg-emerald-600 hover:text-white shadow-sm'
+                                        } disabled:opacity-50`}
+                                    >
+                                        {inviting === player.source ? (
+                                            <RefreshCw className="w-4 h-4 animate-spin" />
+                                        ) : (
+                                            <Send className="w-4 h-4" />
+                                        )}
+                                    </button>
+                                </MotionDiv>
+                            ))}
+                        </ul>
+                    ) : (
+                        <div className="py-12 text-center space-y-3 bg-secondary/10 rounded-2xl border border-dashed border-border/50">
+                            <Users className="w-12 h-12 mx-auto text-muted-foreground opacity-20" />
+                            <p className="text-sm text-muted-foreground">No players found nearby</p>
+                        </div>
+                    )}
+                </div>
+
+                <div className="p-6 bg-secondary/30 border-t border-border flex justify-end">
+                    <button onClick={onClose} className="px-4 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
+                        Cancel
+                    </button>
+                </div>
             </MotionDiv>
         </MotionDiv>
     );

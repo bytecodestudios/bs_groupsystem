@@ -85,22 +85,47 @@ RegisterNUICallback('bsgroup:nui:updateTasks', function(data, cb)
 end)
 
 RegisterNUICallback('bsgroup:nui:fetchSingleGroup', function(data, cb)
-    local response = lib.callback.await('bsgroup:nui:server:fetchSingleGroup', false, data.groupId)
+    local response = lib.callback.await('bs_groupsystem:server:fetchSingleGroup', false, data.groupId)
     cb(response)
 end)
 
 RegisterNUICallback('bsgroup:nui:processRequest', function(data, cb)
-    local response = lib.callback.await('bsgroup:nui:server:processRequest', false, data)
+    local response = lib.callback.await('bs_groupsystem:server:processRequest', false, data)
     cb(response)
 end)
 
 RegisterNUICallback('bsgroup:nui:promoteLeader', function(data, cb)
-    local response = lib.callback.await('bsgroup:nui:server:promoteLeader', false, data)
+    local response = lib.callback.await('bs_groupsystem:server:promoteLeader', false, data)
+    cb({ status = response ~= nil, group = response })
+end)
+
+RegisterNUICallback('bsgroup:nui:getNearbyPlayers', function(_, cb)
+    local response = lib.callback.await('bs_groupsystem:server:getNearbyPlayers', false)
     cb(response)
 end)
 
+RegisterNUICallback('bsgroup:nui:invitePlayer', function(data, cb)
+    local response = lib.callback.await('bs_groupsystem:server:invitePlayer', false, data)
+    cb(response)
+end)
+
+lib.callback.register('bs_groupsystem:client:receiveConfirmationPopup', function(data)
+    local alert = lib.alertDialog({
+        header = data.title or 'Group',
+        content = data.description or data.msg,
+        centered = true,
+        cancel = true,
+        labels = {
+            confirm = "Accept",
+            cancel = "Decline"
+        }
+    })
+
+    return { status = alert == 'confirm' }
+end)
+
 RegisterNUICallback('bsgroup:nui:getPlayerData', function(_, cb)
-    local response = lib.callback.await('bsgroup:nui:server:getPlayerData', false)
+    local response = lib.callback.await('bs_groupsystem:server:getPlayerData', false)
     cb(response)
 end)
 

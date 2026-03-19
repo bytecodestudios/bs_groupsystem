@@ -143,6 +143,12 @@ const Groups = () => {
         { id: 'settings', label: t('ui.groups.tab_settings'), icon: Settings },
     ];
 
+    useEffect(() => {
+        if (myGroup && selectedGroup && myGroup.id === selectedGroup.id) {
+            setSelectedGroup(myGroup);
+        }
+    }, [myGroup]);
+
     const fetchGroupsData = async () => {
         let currentCitizenId = citizenId;
         if (!currentCitizenId) {
@@ -247,8 +253,8 @@ const Groups = () => {
         }
     };
 
-    const handleUpdateGroup = (updatedGroup: Group) => {
-        fetchGroupsData();
+    const handleUpdateGroup = async (updatedGroup: Group) => {
+        await fetchGroupsData();
         setSelectedGroup(updatedGroup);
     };
 

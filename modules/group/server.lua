@@ -485,13 +485,17 @@ lib.callback.register('bs_groupsystem:server:requestJoinGroup', function(source,
     local citizenid = player.citizenid
     local partyId = getPlayerPartyId(citizenid)
     if partyId then return {status = false, msg = locale('party_already_inparty')} end
-    if not parties[data.partyId] then return {status = false, msg = locale('party_does_not_exist')} end
+    local targetPartyId = tonumber(data.partyId)
+    if not targetPartyId then return {status = false, msg = locale('party_does_not_exist')} end
+    local party = parties[targetPartyId]
+    if not party then return {status = false, msg = locale('party_does_not_exist')} end
+    if party.joinType == 'Invite Only' then return {status = false, msg = "This group is invite only"} end
+    if party.joinType == 'Closed' then return {status = false, msg = "This group is closed"} end
     local name = player.name
     local dataToSend = {icon = locale('party_notify_icon'), description = locale('party_mem_wants_join_description', name), title = locale('party_mem_wants_join_title')}
-    local leader = getPartyLeader(data.partyId)
+    local leader = getPartyLeader(targetPartyId)
     if not leader then return {status = false, msg = locale('player_not_online')} end
 
-    local party = parties[data.partyId]
     if party then
         party.requests = party.requests or {}
         local alreadyRequested = false
@@ -505,34 +509,30 @@ lib.callback.register('bs_groupsystem:server:requestJoinGroup', function(source,
     end
 
     local leaderSrc = Players:get(leader)?.source
-    local response = lib.callback.await('bs_groupsystem:client:receiveConfirmationPopup', leaderSrc, dataToSend)
-    if response then
-        if response.status then
-            local result = addPlayerToParty(data.partyId, citizenid, name)
-            if result.status then
-                TriggerClientEvent('bs_groupsystem:client:updatePhoneData', src, {app = 'party', action = 'joinParty', partyId = data.partyId})
-            end
-            return {status = result.status, msg = result.msg}
-        else
-            return {status = false, msg = locale('party_mem_req_declined')}
-        end
-    else
-        return {status = false, msg = response}
+    if leaderSrc then
+        TriggerClientEvent('bs_groupsystem:client:notification', leaderSrc, {
+            type = 'info',
+            title = locale('party_mem_wants_join_title'),
+            description = locale('party_mem_wants_join_description', name),
+            icon = 'fa-solid fa-bell'
+        })
     end
+
+    return {status = true, msg = "Join request sent to group leader"}
 end)
 
 lib.callback.register('bs_groupsystem:server:retrieveParties', function(_)
     return parties
 end)
 
-lib.callback.register('bsgroup:nui:server:fetchSingleGroup', function(source, groupId)
+lib.callback.register('bs_groupsystem:server:fetchSingleGroup', function(source, groupId)
     local party = parties[tonumber(groupId)]
     if not party then return { status = false } end
 
     return { status = true, group = party }
 end)
 
-lib.callback.register('bsgroup:nui:server:getPlayerData', function(source)
+lib.callback.register('bs_groupsystem:server:getPlayerData', function(source)
     local player = Players:get(source)
     if not player then return nil end
 
@@ -543,7 +543,7 @@ lib.callback.register('bsgroup:nui:server:getPlayerData', function(source)
     }
 end)
 
-lib.callback.register('bsgroup:nui:server:promoteLeader', function(source, data)
+lib.callback.register('bs_groupsystem:server:promoteLeader', function(source, data)
     local partyId = tonumber(data.groupId)
     local party = parties[partyId]
     if not party then return nil end
@@ -555,7 +555,7 @@ lib.callback.register('bsgroup:nui:server:promoteLeader', function(source, data)
     return party
 end)
 
-lib.callback.register('bsgroup:nui:server:processRequest', function(source, data)
+lib.callback.register('bs_groupsystem:server:processRequest', function(source, data)
     local partyId = tonumber(data.groupId)
     local party = parties[partyId]
     if not party then return { status = false, msg = "Group not found" } end
@@ -632,4 +632,64 @@ lib.callback.register('bs_groupsystem:server:updateTasks', function(source, data
         result.group = parties[partyId]
     end
     return result
+end)
+
+lib.callback.register('bs_groupsystem:server:getNearbyPlayers', function(source)
+    local src = source
+    local coords = GetEntityCoords(GetPlayerPed(src))
+    local players = {}
+    local allPlayers = GetPlayers()
+    for _, targetSrc in ipairs(allPlayers) do
+        local targetSrcNum = tonumber(targetSrc)
+        if targetSrcNum and targetSrcNum ~= src then
+            local targetCoords = GetEntityCoords(GetPlayerPed(targetSrcNum))
+            if #(coords - targetCoords) < 15.0 then
+                local p = Players:get(targetSrcNum)
+                if p then
+                    table.insert(players, {
+                        source = targetSrcNum,
+                        name = p.name,
+                        citizenid = p.citizenid
+                    })
+                end
+            end
+        end
+    end
+    return players
+end)
+
+lib.callback.register('bs_groupsystem:server:invitePlayer', function(source, data)
+    local src = source
+    local targetSource = tonumber(data.targetSource)
+    if not targetSource then return { status = false, msg = "Invalid target player" } end
+    local player = Players:get(src)
+    local target = Players:get(targetSource)
+    if not target then return { status = false, msg = "Player is not online" } end
+
+    local partyId = getPlayerPartyId(player.citizenid)
+    if not partyId then return { status = false, msg = "You are not in a group" } end
+
+    local party = parties[partyId]
+    if party.leader ~= player.citizenid then return { status = false, msg = "Only the leader can invite" } end
+    if #party.members >= party.maxMembers then return { status = false, msg = "Group is full" } end
+    if getPlayerPartyId(target.citizenid) then return { status = false, msg = "Player is already in a group" } end
+
+    local dataToSend = {
+        icon = 'fa-solid fa-users',
+        title = "Group Invitation",
+        description = ("%s invited you to join their group: %s"):format(player.name, party.name)
+    }
+
+    local response = lib.callback.await('bs_groupsystem:client:receiveConfirmationPopup', targetSource, dataToSend)
+    if response and response.status then
+        local result = addPlayerToParty(partyId, target.citizenid, target.name)
+        if result.status then
+            updatePartyData(party.members, 'refreshParties')
+            TriggerClientEvent('bs_groupsystem:client:updatePhoneData', targetSource, {app = 'party', action = 'joinParty', partyId = partyId})
+            return { status = true, msg = "Invitation accepted", group = party }
+        end
+        return result
+    else
+        return { status = false, msg = "Invitation declined" }
+    end
 end)

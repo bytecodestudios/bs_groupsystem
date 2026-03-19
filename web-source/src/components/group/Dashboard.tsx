@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Search, Plus, ChevronLeft, ChevronRight, LayoutDashboard, Activity, AlertCircle, TrendingUp, CheckCircle2, ListTodo, Users, ArrowUpRight, Clock, Send, ShieldAlert } from 'lucide-react';
+import { Shield, Search, Plus, ChevronLeft, ChevronRight, LayoutDashboard, TrendingUp, CheckCircle2, ListTodo, Clock, Send, ShieldAlert } from 'lucide-react';
 import { Group } from '../../utils/types';
 import { MyGroupCard, PublicGroupCard } from './GroupCard';
 import { useLocale } from '../../hooks/useLocale';

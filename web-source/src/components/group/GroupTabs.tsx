@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MoreVertical, Crown, UserX, Bell, Info, UserCheck, CheckCircle, Circle, Trash2, ClipboardEdit } from 'lucide-react';
+import { MoreVertical, Crown, UserX, Bell, Info, UserPlus, UserCheck, CheckCircle, Circle, Trash2, ClipboardEdit } from 'lucide-react';
 import { fetchNui } from '../../utils/fetchNui';
 import { Group, Member, GroupTask } from '../../utils/types';
-import { ConfirmationModal } from './Modals';
 import { useNotifications } from '../misc/Notification';
 import { transformSingleGroup } from '../../utils/groupUtils';
 import { useLocale } from '../../hooks/useLocale';
@@ -11,9 +10,8 @@ import { useLocale } from '../../hooks/useLocale';
 const MotionDiv = motion.div;
 const MotionLi = motion.li;
 
-export const MembersTab: React.FC<{ group: Group; onUpdateGroup: (group: Group) => void; citizenId: string | null; }> = ({ group, onUpdateGroup, citizenId }) => {
+export const MembersTab: React.FC<{ group: Group; onUpdateGroup: (group: Group) => void; citizenId: string | null; onOpenInvite: () => void; onConfirmKick: (member: Member) => void; }> = ({ group, onUpdateGroup, citizenId, onOpenInvite, onConfirmKick }) => {
     const [menuOpenFor, setMenuOpenFor] = useState<string | null>(null);
-    const [kickConfirmFor, setKickConfirmFor] = useState<Member | null>(null);
     const { addNotification } = useNotifications();
     const { t } = useLocale();
 
@@ -39,18 +37,28 @@ export const MembersTab: React.FC<{ group: Group; onUpdateGroup: (group: Group) 
 
     return (
         <div className="relative">
+            {group.isLeader && (
+                <div className="flex justify-end mb-4">
+                    <button 
+                        onClick={onOpenInvite}
+                        className="flex items-center space-x-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold rounded-lg transition-transform hover:scale-105 active:scale-95 shadow-lg shadow-emerald-500/20"
+                    >
+                        <UserPlus className="w-4 h-4" />
+                        <span>{t('ui.group_tabs.invite_member')}</span>
+                    </button>
+                </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 <AnimatePresence>
                     {group.members.map(member => (
                         <MotionDiv key={member.id} layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className={`relative bg-secondary/50 border rounded-lg p-4 flex items-center space-x-4 transition-colors group ${member.id === group.leader ? "border-amber-400/50 shadow-lg shadow-amber-500/5" : "border-border hover:border-primary/50"}`}>
-                            {group.isLeader && member.id !== group.leader && (<div className="absolute top-2 right-2"><button onClick={() => setMenuOpenFor(menuOpenFor === member.id ? null : member.id)} className="p-2 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground"><MoreVertical className="w-4 h-4" /></button><AnimatePresence>{menuOpenFor === member.id && (<MotionDiv initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="absolute right-0 mt-1 w-48 bg-card border border-border rounded-lg shadow-xl z-10 origin-top-right p-1"><ul className="text-sm"><li><button onClick={() => handleAction("promoteLeader", { groupId: group.id, newLeaderId: member.id }, member.name)} className="w-full text-left px-3 py-1.5 rounded-md hover:bg-secondary flex items-center"><Crown className="w-4 h-4 mr-2 text-yellow-400" />{t('ui.group_tabs.promote')}</button></li><li><button onClick={() => setKickConfirmFor(member)} className="w-full text-left px-3 py-1.5 rounded-md hover:bg-red-500/20 text-red-400 flex items-center"><UserX className="w-4 h-4 mr-2" />{t('ui.group_tabs.kick')}</button></li></ul></MotionDiv>)}</AnimatePresence></div>)}
+                            {group.isLeader && member.id !== group.leader && (<div className="absolute top-2 right-2"><button onClick={() => setMenuOpenFor(menuOpenFor === member.id ? null : member.id)} className="p-2 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground"><MoreVertical className="w-4 h-4" /></button><AnimatePresence>{menuOpenFor === member.id && (<MotionDiv initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="absolute right-0 mt-1 w-48 bg-card border border-border rounded-lg shadow-xl z-10 origin-top-right p-1"><ul className="text-sm"><li><button onClick={() => handleAction("promoteLeader", { groupId: group.id, newLeaderId: member.id }, member.name)} className="w-full text-left px-3 py-1.5 rounded-md hover:bg-secondary flex items-center"><Crown className="w-4 h-4 mr-2 text-yellow-400" />{t('ui.group_tabs.promote')}</button></li><li><button onClick={() => { onConfirmKick(member); setMenuOpenFor(null); }} className="w-full text-left px-3 py-1.5 rounded-md hover:bg-red-500/20 text-red-400 flex items-center"><UserX className="w-4 h-4 mr-2" />{t('ui.group_tabs.kick')}</button></li></ul></MotionDiv>)}</AnimatePresence></div>)}
                             <div className="relative"><div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-xl font-bold border-2 border-border">{member.name.charAt(0).toUpperCase()}</div><span className={`absolute bottom-0 right-0 block h-3.5 w-3.5 rounded-full border-2 border-secondary/50 ${member.isOnline ? "bg-green-500 shadow-[0_0_5px_theme(colors.green.500)]" : "bg-gray-500"}`}></span></div>
                             <div className="flex-grow"><p className="font-bold text-foreground flex items-center">{member.name}{member.id === group.leader && <Crown className="w-4 h-4 ml-1.5 text-yellow-400" />}</p><p className="text-xs text-muted-foreground">{member.id === group.leader ? t('ui.group_tabs.group_leader') : t('ui.group_tabs.member')}</p></div>
                         </MotionDiv>
                     ))}
                 </AnimatePresence>
             </div>
-            <AnimatePresence>{kickConfirmFor && <ConfirmationModal title={t('ui.group_tabs.kick_title')} message={<>{t('ui.group_tabs.kick_message', kickConfirmFor.name)}</>} confirmText={t('ui.group_tabs.confirm_kick')} confirmClass="bg-red-600 hover:bg-red-700" onConfirm={() => handleAction("kickMember", { groupId: group.id, memberId: kickConfirmFor.id }, kickConfirmFor.name).finally(() => setKickConfirmFor(null))} onCancel={() => setKickConfirmFor(null)} Icon={UserX} />}</AnimatePresence>
         </div>
     );
 };
@@ -62,7 +70,7 @@ export const RequestsTab: React.FC<{ group: Group; onUpdateGroup: (group: Group)
 
     const handleProcessRequest = async (requesterId: string, action: "accept" | "decline", requesterName: string) => { 
         try { 
-            const response = await fetchNui<any>("processRequest", { groupId: group.id, requestId: requesterId, action, requestName: requesterName }); 
+            const response = await fetchNui<any>("bsgroup:nui:processRequest", { groupId: group.id, requestId: requesterId, action, requestName: requesterName }); 
             if (response?.status && response.group && citizenId) {
                 const transformed = transformSingleGroup(response.group, citizenId);
                 onUpdateGroup(transformed); 
