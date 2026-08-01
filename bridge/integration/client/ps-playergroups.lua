@@ -1,5 +1,3 @@
-if (GetResourceState('ps-playergroups') ~= 'started') then return end
-
 --- Exports a function to ps-playergroups.
 ---@param name string
 ---@param cb function

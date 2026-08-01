@@ -265,13 +265,6 @@ RegisterNetEvent('bs_groupsystem:client:updatePhoneData', function(data)
 end)
 
 RegisterNetEvent('bs_groupsystem:client:notification', function(data)
-    -- lib.notify({
-    --     title = data.title or 'Group Notification',
-    --     description = data.description or data.msg,
-    --     type = data.type or 'info',
-    --     icon = data.icon or 'users'
-    -- })
-
     SendNUIMessage({
         action = 'notification',
         data = {

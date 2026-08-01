@@ -1,5 +1,3 @@
-if (GetResourceState('bd-groups') ~= 'started') then return end
-
 --- Exports a function to bd-groups.
 ---@param name string
 ---@param cb function
