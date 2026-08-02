@@ -4,7 +4,7 @@ lua54 'yes'
 
 author 'Cadburry & Guardian & Snappy (Bytecode Studios)'
 description 'Group System with tasks list'
-version '0.7'
+version '0.8'
 
 shared_script {
     '@ox_lib/init.lua',
@@ -12,16 +12,19 @@ shared_script {
     'config.lua',
 }
 
-client_script {
-    'modules/utils/client.lua',
+client_scripts {
     'bridge/**/client.lua',
-    'modules/**/client.lua',
+    'modules/group/client.lua',
+    'modules/blips/client.lua',
+    'modules/nui/client.lua',
 }
 
 server_scripts {
     'modules/utils/server.lua',
     'bridge/**/server.lua',
-    'modules/**/server.lua',
+    'modules/group/server.lua',
+    'modules/blips/server.lua',
+    'modules/nui/server.lua',
 }
 
 ui_page 'web/index.html'

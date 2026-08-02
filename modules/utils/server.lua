@@ -1,12 +1,13 @@
-local PlayerStore = {}
+---@type table<number, PlayerData>
+local store = {}
 
 Players = {}
 
-setmetatable(PlayerStore , {
+setmetatable(store , {
 	__index = function(self, source)
 		local player = nil
 		local idFound = false
-		for _, v in pairs(PlayerStore) do
+		for _, v in pairs(store) do
 			if v.citizenid == source then
 				player = v
 				idFound = true
@@ -20,21 +21,27 @@ setmetatable(PlayerStore , {
 	end
 })
 
+--- Stores a player and notifies their client of the change.
+---@param source number Server id of the player.
+---@param data PlayerData Normalised player data.
+---@return PlayerData
 function Players:set(source, data)
-	PlayerStore[source] = data
-	TriggerClientEvent('__bs_group:internal:onPlayerDataChange', source, data)
-	return PlayerStore[source]
+    store[source] = data
+    return store[source]
 end
 
+--- Removes a player from the store and clears their client mirror.
+---@param source number Server id of the player.
+---@return boolean removed True when a player was removed.
 function Players:clear(source)
-	if PlayerStore[source] then
-		PlayerStore[source] = nil
-		TriggerClientEvent('__bs_group:internal:onPlayerDataChange', source, nil)
-		return true
-	end
-	return false
+    if not store[source] then return false end
+    store[source] = nil
+    return true
 end
 
-function Players:get(source)
-	return PlayerStore[source]
+--- Looks a player up by server id or citizen id.
+---@param key number|string Server id or citizen id.
+---@return PlayerData|nil
+function Players:get(key)
+    return store[key]
 end

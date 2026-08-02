@@ -9,7 +9,5 @@ function CanSeeIllegalParties()
         return exports['qb-inventory']:HasItem('shadowmod')
     elseif GetResourceState('ps-inventory') == 'started' then
         return exports['ps-inventory']:HasItem('shadowmod')
-    elseif GetResourceState('ps-inventory') == 'started' then
-        return exports['ps-inventory']:HasItem('shadowmod')
     end
 end

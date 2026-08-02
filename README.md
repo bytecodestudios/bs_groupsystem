@@ -1,58 +1,70 @@
-A robust and modern Group/Party system for FiveM, featuring task management, job integration, and synchronized blips for all members.
+# Group System
+
+A modern group and party system for FiveM. Players can form groups, take on jobs
+together, follow a shared task list and see the same map blips. It works with the
+main frameworks out of the box.
 
 ## Documentation
+
+Full guides are available here:
 https://bytecode-studios.gitbook.io/cadburry
 
-## Features
+## What it can do
 
-- **Multi-Framework Support**: Seamless integration with ESX, QBCore, Qbox, and Ox via automated bridges.
-- **Advanced Party Management**:
-    - Create parties with custom names, membership limits, and join types.
-    - Real-time synchronization of party data across all members.
-    - Leader controls: Promote new leaders, kick members, or disband the party.
-    - Resilience: Automatic leader reassignment if a leader disconnects.
-- **Job Integration**:
-    - Easy registration of jobs that can be tied to parties.
-    - Support for both legal and illegal activities.
-    - VPN/Shadow Mod requirement for illegal jobs.
-- **Dynamic Task List**:
-    - Track party progress with Current, Pending, and Completed tasks.
-    - Immediate updates for all members when task statuses change.
-- **Synchronized Blips**:
-    - Share locations, radii, and entities with all party members.
-    - Supports custom sprites, colors, and auto-routing.
-- **Modern NUI Integration**:
-    - Built-in support for the `kartik-laptop` application.
-    - Modern, responsive interface for party discovery and management.
+**Works with your framework**
+Supports ESX, QBCore, Qbox and Ox with no extra setup. The correct bridge loads
+automatically based on what your server is running.
 
-## Dependencies
+**Group management**
+- Create a group with a custom name, a member limit and a join type.
+- Every member sees the same group information in real time.
+- The leader can promote a new leader, kick members or disband the group.
+- If the leader disconnects, another member is promoted automatically.
+
+**Jobs**
+- Register jobs that groups can take on.
+- Jobs can be marked legal or illegal.
+- Illegal jobs require every member to hold the correct item (a "VPN" item by default).
+
+**Task list**
+- Give a group a list of tasks with a Pending, Current or Done status.
+- All members see task changes the moment they happen.
+
+**Map blips**
+- Share a location, an area or an entity with the whole group.
+- Custom icon, color, size and automatic route are supported.
+
+**Interface**
+- Clean, responsive menu for finding and managing groups.
+- Built in support for the `kartik-laptop` app.
+
+## Requirements
 
 - [ox_lib](https://github.com/CommunityOx/ox_lib)
 
 ## Installation
 
-1. Drag and drop `cad-groupsystem` into your resources folder.
-2. Ensure you have `ox_lib` installed and started before this resource.
-3. Configure `config.lua` to your liking.
-4. Add `ensure cad-groupsystem` to your server configuration.
+1. Place the `cad-groupsystem` folder inside your server's `resources` folder.
+2. Make sure `ox_lib` is installed and starts before this resource.
+3. Open `config.lua` and adjust the settings to your liking.
+4. Add `ensure cad-groupsystem` to your server config file.
 
 ## Configuration
 
-The `config.lua` file allows you to customize core timings and integrations:
+All settings live in `config.lua`.
 
-- `Config.PartyTimeout`: How long (in ms) a member can be disconnected before being removed from the party (default 5 mins).
-- `Config.StartingPartyCooldown`: Cooldown (in mins) before players can create new parties.
-- `Config.AllowLeavePartyDuringJob`: Whether members can leave or be kicked while a job is active.
-- `Config.AppSettings`: Customization for integration with laptop systems (e.g., kartik-laptop).
+| Setting | What it does |
+| --- | --- |
+| `Config.PartyTimeout` | How long a disconnected member is kept before being removed, in milliseconds. Default is 5 minutes. |
+| `Config.StartingPartyCooldown` | How long players must wait after the server starts before creating groups, in minutes. |
+| `Config.AllowLeavePartyDuringJob` | Whether members can leave or be kicked while a job is active. |
+| `Config.AppSettings` | Settings for the laptop app integration, such as `kartik-laptop`. |
 
-### Usage
+## How players open it
 
-#### `openGroups` (Command/Keybind)
-Default keybind is `F6`. Access the Group Management menu.
+By default players press `F6` to open the group menu. You can change this key in the
+FiveM keybind settings, or open it through a supported laptop app.
 
 ## Credits
 
-**Developed by:**
-- Cadburry
-- Guardian
-- Snappy
+Developed by Cadburry, Guardian and Snappy (Bytecode Studios).
