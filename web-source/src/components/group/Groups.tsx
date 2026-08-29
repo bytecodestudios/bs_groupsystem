@@ -1,16 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LayoutDashboard, Users, Settings } from 'lucide-react';
-import { fetchNui } from '../../utils/fetchNui';
-import { useNuiEvent } from '../../hooks/useNuiEvent';
 import { Group } from '../../utils/types';
 import { DashboardView, GroupsView } from './Dashboard';
 import GroupDetails from './Details';
 import { CreateGroupModal } from './Modals';
 import { SettingsTab } from './SettingsTab';
-import { useNotifications } from '../misc/Notification';
-import { transformParties } from '../../utils/groupUtils';
 import { useLocale } from '../../hooks/useLocale';
+import { useGroupsController } from '../../hooks/useGroupsController';
 
 const MotionDiv = motion.div;
 
@@ -26,7 +23,7 @@ const SkeletonPlaceholder: React.FC<{ className?: string }> = ({ className }) =>
 );
 
 const GroupsSkeletonLoader: React.FC = () => (
-    <div className="h-full flex flex-col p-6 bg-background rounded-b-2xl font-sans relative overflow-hidden">
+    <div className="h-full flex flex-col p-4 sm:p-6 bg-background rounded-b-2xl font-sans relative overflow-hidden">
         {/* Tab Navigation Skeleton */}
         <div className="flex-shrink-0 flex justify-center mb-8">
              <div className="p-1 bg-secondary/30 rounded-xl border border-border/50 flex space-x-2">
@@ -123,18 +120,26 @@ const GroupsSkeletonLoader: React.FC = () => (
 type TabId = 'dashboard' | 'groups' | 'settings';
 
 const Groups = () => {
-    const [isLoading, setIsLoading] = useState(true);
-    const [publicGroups, setPublicGroups] = useState<Group[]>([]);
-    const [myGroup, setMyGroup] = useState<Group | null>(null);
-    const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
+    const {
+        isLoading,
+        publicGroups,
+        myGroup,
+        selectedGroup,
+        setSelectedGroup,
+        sentRequests,
+        isVpnConnected,
+        hasVpnAccess,
+        citizenId,
+        handleVpnToggle,
+        handleCreateGroup,
+        handleRequestToJoin,
+        handleResolveJobOffer,
+        handleUpdateGroup,
+        handleDisbandOrLeave,
+    } = useGroupsController();
+
     const [isCreateModalOpen, setCreateModalOpen] = useState(false);
-    const [sentRequests, setSentRequests] = useState<Set<string>>(new Set());
     const [activeTab, setActiveTab] = useState<TabId>('dashboard');
-    const [isVpnConnected, setIsVpnConnected] = useState(false);
-    const [hasVpnAccess, setHasVpnAccess] = useState(true);
-    
-    const { addNotification } = useNotifications();
-    const [citizenId, setCitizenId] = useState<string | null>(null);
     const { t } = useLocale();
 
     const tabs = [
@@ -143,136 +148,11 @@ const Groups = () => {
         { id: 'settings', label: t('ui.groups.tab_settings'), icon: Settings },
     ];
 
-    useEffect(() => {
-        if (myGroup && selectedGroup && myGroup.id === selectedGroup.id) {
-            setSelectedGroup(myGroup);
-        }
-    }, [myGroup]);
-
-    const fetchGroupsData = async () => {
-        let currentCitizenId = citizenId;
-        if (!currentCitizenId) {
-            const playerData = await fetchNui<{ citizenid: string }>("bsgroup:nui:getPlayerData", {});
-            if (playerData?.citizenid) {
-                currentCitizenId = playerData.citizenid;
-                setCitizenId(currentCitizenId);
-            }
-        }
-
-        if (!currentCitizenId) return;
-
-        const response = await fetchNui<{ status: boolean, data: { parties: any, canSeeIllegalParties: boolean } }>("bsgroup:nui:fetchParties", {});
-        if (response?.status) {
-            const { groups, myGroup } = transformParties(response.data.parties, currentCitizenId, response.data.canSeeIllegalParties);
-            setPublicGroups(groups);
-            setMyGroup(myGroup);
-        }
-    };
-
-    useEffect(() => {
-        setIsLoading(true);
-        
-        // Check VPN access on mount
-        fetchNui<{ hasAccess: boolean, isConnected: boolean }>('bsgroup:nui:checkVpnAccess', {}).then((response) => {
-            if (response) {
-                setHasVpnAccess(response.hasAccess ?? true);
-                setIsVpnConnected(response.isConnected ?? false);
-            }
-        });
-        
-        fetchGroupsData().finally(() => setTimeout(() => setIsLoading(false), 800));
-    }, []);
-
-    // VPN toggle handler - calls backend to validate and toggle
-    const handleVpnToggle = async (connect: boolean) => {
-        const response = await fetchNui<{ success: boolean, connected: boolean, msg?: string }>('bsgroup:nui:toggleVpn', { connect });
-        if (response?.success) {
-            setIsVpnConnected(response.connected);
-            // Refresh groups to apply illegal filtering
-            fetchGroupsData();
-        } else if (response?.msg) {
-            addNotification('error', t('ui.groups.notif_vpn_error'), response.msg, 5000);
-        }
-    };
-
-    useNuiEvent<any>('refreshParties', (response) => {
-        if (citizenId) {
-            const { groups, myGroup } = transformParties(response.data, citizenId, response.canSeeIllegalParties);
-            setPublicGroups(groups);
-            setMyGroup(myGroup);
-        } else {
-            fetchGroupsData();
-        }
-    });
-
-    useNuiEvent<any>('refreshTasksDetail', (response) => {
-        if (citizenId) {
-            const { groups, myGroup } = transformParties(response.data, citizenId, response.canSeeIllegalParties);
-            setPublicGroups(groups);
-            setMyGroup(myGroup);
-        } else {
-            fetchGroupsData();
-        }
-    });
-
-    useNuiEvent<any>('backToParties', (response) => {
-        if (citizenId) {
-            const { groups, myGroup } = transformParties(response.data, citizenId, response.canSeeIllegalParties);
-            setPublicGroups(groups);
-            setMyGroup(myGroup);
-            if (!myGroup) setSelectedGroup(null);
-        } else {
-            fetchGroupsData();
-            setSelectedGroup(null);
-        }
-    });
-
-    const handleCreateGroup = async (data: { name: string; joinType: Group['joinType']; maxMembers: number; }) => {
-        const response = await fetchNui<{ status: boolean, msg: string }>("bsgroup:nui:createParty", { 
-            partyName: data.name,
-            maxMembers: data.maxMembers,
-            joinType: data.joinType
-        });
-        if (response?.status) {
-            fetchGroupsData();
+    const onCreateGroup = async (data: { name: string; joinType: Group['joinType']; maxMembers: number; isIllegal?: boolean; }) => {
+        const ok = await handleCreateGroup(data);
+        if (ok) {
             setCreateModalOpen(false);
             setActiveTab('dashboard');
-            addNotification('success', t('ui.groups.notif_group_established'), t('ui.groups.notif_created_format', data.name));
-        } else {
-            addNotification('error', t('ui.groups.notif_failed'), response?.msg || t('ui.groups.notif_could_not_create'));
-        }
-    };
-
-    const handleRequestToJoin = async (groupId: string) => {
-        const response = await fetchNui<{ status: boolean, msg: string }>("bsgroup:nui:requestJoinParty", { partyId: groupId });
-        if (response?.status) {
-            setSentRequests(prev => new Set(prev).add(groupId));
-            addNotification('info', t('ui.groups.notif_application_sent'), t('ui.groups.notif_request_submitted'));
-        } else {
-            addNotification('error', t('ui.groups.notif_request_failed'), response?.msg || t('ui.groups.notif_could_not_send'));
-        }
-    };
-
-    const handleUpdateGroup = async (updatedGroup: Group) => {
-        await fetchGroupsData();
-        setSelectedGroup(updatedGroup);
-    };
-
-    const handleDisbandOrLeave = async () => {
-        if (!selectedGroup) return;
-        const isLeader = selectedGroup.isLeader;
-        const groupName = selectedGroup.name;
-        
-        const eventName = isLeader ? "bsgroup:nui:disbandParty" : "bsgroup:nui:leaveParty";
-        const response = await fetchNui<{ status: boolean }>(eventName, { partyId: selectedGroup.id });
-        if (response?.status) {
-            setSelectedGroup(null);
-            fetchGroupsData();
-            if (isLeader) {
-                addNotification('warning', t('ui.groups.notif_group_disbanded_title'), t('ui.groups.notif_group_disbanded_format', groupName));
-            } else {
-                addNotification('info', t('ui.groups.notif_left_group'), t('ui.groups.notif_left_group_format', groupName));
-            }
         }
     };
 
@@ -286,15 +166,16 @@ const Groups = () => {
                         <GroupDetails group={selectedGroup} onBack={() => setSelectedGroup(null)} onUpdateGroup={handleUpdateGroup} onDisbandOrLeave={handleDisbandOrLeave} citizenId={citizenId} />
                     </MotionDiv>
                 ) : (
-                    <MotionDiv key="tabs-view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col h-full p-6">
-                        {/* Tab Navigation */}
-                        <div className="flex-shrink-0 flex justify-center mb-6">
-                            <div className="flex p-1 bg-secondary/30 backdrop-blur-md rounded-xl border border-border/50">
+                    <MotionDiv key="tabs-view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col h-full p-4 sm:p-6">
+                        {/* Tab Navigation — full-width segmented control on phone,
+                            centered auto-width pill on laptop (sm+). */}
+                        <div className="flex-shrink-0 flex justify-center mb-4 sm:mb-6">
+                            <div className="flex w-full sm:w-auto p-1 bg-secondary/30 backdrop-blur-md rounded-xl border border-border/50">
                                 {tabs.map((tab) => (
                                     <button
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id as TabId)}
-                                        className={`relative px-4 py-2 text-sm font-medium rounded-xl transition-colors focus:outline-none ${activeTab === tab.id ? 'text-white' : 'text-muted-foreground hover:text-white'}`}
+                                        className={`relative flex-1 sm:flex-none min-w-0 px-2 py-2 text-sm font-medium rounded-xl transition-colors focus:outline-none sm:px-4 ${activeTab === tab.id ? 'text-white' : 'text-muted-foreground hover:text-white'}`}
                                     >
                                         {activeTab === tab.id && (
                                             <motion.div
@@ -303,9 +184,9 @@ const Groups = () => {
                                                 transition={{ type: "spring", stiffness: 300, damping: 25 }}
                                             />
                                         )}
-                                        <span className="relative z-10 flex items-center space-x-2">
-                                            <tab.icon className="w-4 h-4" />
-                                            <span>{tab.label}</span>
+                                        <span className="relative z-10 flex items-center justify-center gap-1.5 sm:gap-2 min-w-0">
+                                            <tab.icon className="w-4 h-4 shrink-0" />
+                                            <span className="truncate">{tab.label}</span>
                                         </span>
                                     </button>
                                 ))}
@@ -324,6 +205,7 @@ const Groups = () => {
                                             onSelectGroup={setSelectedGroup} 
                                             onOpenCreateModal={() => setCreateModalOpen(true)}
                                             onRequestToJoin={handleRequestToJoin}
+                                            onResolveJobOffer={handleResolveJobOffer}
                                             sentRequests={sentRequests}
                                             isVpnConnected={isVpnConnected}
                                         />
@@ -352,7 +234,7 @@ const Groups = () => {
                 )}
             </AnimatePresence>
             <AnimatePresence>
-                {isCreateModalOpen && <CreateGroupModal onClose={() => setCreateModalOpen(false)} onCreate={handleCreateGroup} isVpnConnected={isVpnConnected} />}
+                {isCreateModalOpen && <CreateGroupModal onClose={() => setCreateModalOpen(false)} onCreate={onCreateGroup} isVpnConnected={isVpnConnected} />}
             </AnimatePresence>
         </div>
     );

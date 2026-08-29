@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Search, Plus, ChevronLeft, ChevronRight, LayoutDashboard, TrendingUp, CheckCircle2, ListTodo, Clock, Send, ShieldAlert } from 'lucide-react';
+import { Shield, Search, Plus, ChevronLeft, ChevronRight, LayoutDashboard, TrendingUp, CheckCircle2, ListTodo, Clock, Send, ShieldAlert, Briefcase } from 'lucide-react';
 import { Group } from '../../utils/types';
 import { MyGroupCard, PublicGroupCard } from './GroupCard';
 import { useLocale } from '../../hooks/useLocale';
@@ -15,9 +15,10 @@ export const DashboardView: React.FC<{
     onSelectGroup: (group: Group) => void, 
     onOpenCreateModal: () => void,
     onRequestToJoin: (groupId: string) => void,
+    onResolveJobOffer: (accept: boolean) => void,
     sentRequests: Set<string>,
     isVpnConnected: boolean
-}> = ({ myGroup, allGroups, isInGroup, onSelectGroup, onOpenCreateModal, onRequestToJoin, sentRequests, isVpnConnected }) => {
+}> = ({ myGroup, allGroups, isInGroup, onSelectGroup, onOpenCreateModal, onRequestToJoin, onResolveJobOffer, sentRequests, isVpnConnected }) => {
     const { t } = useLocale();
     
     // Derived Stats
@@ -82,6 +83,29 @@ export const DashboardView: React.FC<{
                                 </h3>
                                 
                                 <div className="space-y-6 flex-grow">
+                                    {/* Job Offer (Only if Leader) */}
+                                    {myGroup.isLeader && myGroup.jobOffer && (
+                                        <div className="space-y-3">
+                                            <p className="text-xs font-semibold text-emerald-300 uppercase tracking-wider flex items-center">
+                                                <Briefcase className="w-3.5 h-3.5 mr-1.5" />{t('ui.joboffer.section')}
+                                            </p>
+                                            <div className="p-3 bg-emerald-500/5 rounded-lg border border-emerald-500/25 space-y-3">
+                                                <div>
+                                                    <p className="text-sm font-semibold text-foreground">{myGroup.jobOffer.title}</p>
+                                                    <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{myGroup.jobOffer.description}</p>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => onResolveJobOffer(false)} className="flex-1 py-1.5 text-xs font-semibold rounded-md bg-secondary hover:bg-muted text-foreground transition-colors">
+                                                        {myGroup.jobOffer.cancelLabel || t('ui.joboffer.decline')}
+                                                    </button>
+                                                    <button onClick={() => onResolveJobOffer(true)} className="flex-1 py-1.5 text-xs font-semibold rounded-md bg-emerald-600 hover:bg-emerald-500 text-white transition-colors">
+                                                        {myGroup.jobOffer.confirmLabel || t('ui.joboffer.accept')}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     {/* Incoming Requests (Only if Leader) */}
                                     {myGroup.isLeader && (
                                         <div className="space-y-3">
@@ -149,13 +173,13 @@ export const DashboardView: React.FC<{
              ) : (
                  <div className="flex flex-col h-full">
                      {/* Hero Section */}
-                     <div className="relative bg-gradient-to-br from-emerald-900/40 to-green-900/20 rounded-2xl border border-emerald-500/30 p-8 text-center space-y-6 overflow-hidden mb-8">
+                     <div className="relative bg-gradient-to-br from-emerald-900/40 to-green-900/20 rounded-2xl border border-emerald-500/30 p-6 sm:p-8 text-center space-y-6 overflow-hidden mb-8">
                          <div className="absolute top-0 right-0 p-32 bg-emerald-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
                          <div className="relative z-10">
                             <div className="inline-flex p-4 bg-emerald-500/20 rounded-full mb-4 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
                                 <LayoutDashboard className="w-8 h-8 text-emerald-300" />
                             </div>
-                            <h3 className="text-3xl font-bold text-white mb-2">{t('ui.dashboard.find_your_squad')}</h3>
+                            <h3 className="text-2xl sm:text-3xl font-bold text-white mb-2 break-words">{t('ui.dashboard.find_your_squad')}</h3>
                             <p className="text-base text-gray-300 max-w-md mx-auto leading-relaxed">
                                 {t('ui.dashboard.find_your_squad_desc')}
                             </p>
@@ -255,9 +279,9 @@ export const GroupsView: React.FC<{
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                         <input type="text" placeholder={t('ui.dashboard.search_placeholder')} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full md:w-64 bg-input border-2 border-transparent focus:border-border rounded-lg pl-9 pr-4 py-1.5 text-sm focus:ring-0 focus:outline-none transition-colors"/>
                     </div>
-                    <div className="flex items-center space-x-2 bg-secondary/30 p-1 rounded-lg overflow-x-auto">
+                    <div className="flex items-center bg-secondary/30 p-1 rounded-lg overflow-x-auto">
                         {(['all', 'Recruiting', 'Active', 'Full'] as const).map(status => (
-                            <button key={status} onClick={() => setStatusFilter(status)} className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${statusFilter === status ? 'bg-primary text-background shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>{status === 'all' ? t('ui.dashboard.filter_all') : status}</button>
+                            <button key={status} onClick={() => setStatusFilter(status)} className={`shrink-0 whitespace-nowrap px-3 py-1 text-xs font-semibold rounded-md transition-colors ${statusFilter === status ? 'bg-primary text-background shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>{status === 'all' ? t('ui.dashboard.filter_all') : status}</button>
                         ))}
                         
                         {isVpnConnected && (

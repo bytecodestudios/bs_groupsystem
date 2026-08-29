@@ -70,6 +70,16 @@
             "next": "Next",
             "page_of": "Page %s of %s"
         },
+        "joboffer": {
+            "section": "Job Offer",
+            "accept": "Accept",
+            "decline": "Decline",
+            "accepted_title": "Job Accepted",
+            "accepted_desc": "Your group has taken on the job.",
+            "declined_title": "Job Declined",
+            "declined_desc": "The job offer was declined.",
+            "error_desc": "Could not process the job offer."
+        },
         "groups": {
             "tab_dashboard": "Dashboard",
             "tab_groups": "Groups",

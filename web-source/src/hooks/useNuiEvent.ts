@@ -43,6 +43,15 @@ export const useNuiEvent = <T = any>(
     };
 
     window.addEventListener("message", eventListener);
+
+    // Phone hosts (sd-phone / lb-phone) deliver custom app messages through
+    // their own dispatcher rather than raw window "message" events, so also
+    // subscribe there when available.
+    const phoneUse = (window as any).useNuiEvent;
+    if (typeof phoneUse === "function") {
+      phoneUse(action, (data: T) => savedHandler.current?.(data));
+    }
+
     // Remove Event Listener on component cleanup
     return () => window.removeEventListener("message", eventListener);
   }, [action]);

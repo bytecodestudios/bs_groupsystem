@@ -13,7 +13,12 @@ shared_script {
 }
 
 client_scripts {
-    'bridge/**/client.lua',
+    'bridge/framework/client.lua',
+    'bridge/inventory/client.lua',
+    'bridge/compat/client.lua',
+    'bridge/apps/manager.lua',
+    'bridge/apps/kartik.lua',
+    'bridge/apps/sd-phone.lua',
     'modules/group/client.lua',
     'modules/blips/client.lua',
     'modules/nui/client.lua',
@@ -21,7 +26,10 @@ client_scripts {
 
 server_scripts {
     'modules/utils/server.lua',
-    'bridge/**/server.lua',
+    'bridge/framework/server.lua',
+    'bridge/inventory/server.lua',
+    'bridge/logger/server.lua',
+    'bridge/compat/server.lua',
     'modules/group/server.lua',
     'modules/blips/server.lua',
     'modules/nui/server.lua',
@@ -40,10 +48,4 @@ provide 'ps-playergroups'
 
 dependencies {
     'ox_lib'
-}
-
-escrow_ignore {
-    'bridge/**/**/*',
-    'types.lua',
-    'config.lua'
 }

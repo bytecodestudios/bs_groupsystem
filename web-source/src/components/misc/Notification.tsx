@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CheckCircle2, AlertTriangle, Info, XCircle } from 'lucide-react';
+import { isPhoneEnv } from '../../utils/phone';
 
 const MotionDiv = motion.div;
 
@@ -23,6 +24,7 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 
 export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const phoneMode = isPhoneEnv();
 
   const addNotification = useCallback((type: NotificationType, title: string, message: string, duration = 4000) => {
     const id = Math.random().toString(36).substring(7);
@@ -44,11 +46,21 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
   return (
     <NotificationContext.Provider value={{ addNotification, removeNotification }}>
       {children}
-      {/* Global Notification Container - Positioned Top Right */}
-      <div className="fixed top-8 right-8 z-[99999] flex flex-col gap-3 w-80 pointer-events-none">
+      {/* Global Notification Container.
+          On a phone host the app fills a narrow screen, so a fixed top-right
+          320px toast overlaps the content. There we render a compact banner
+          pinned to the top that respects the phone's safe-area inset. */}
+      <div
+        className={
+          phoneMode
+            ? 'fixed top-0 inset-x-0 z-[99999] flex flex-col gap-2 px-3 pointer-events-none'
+            : 'fixed top-8 right-8 z-[99999] flex flex-col gap-3 w-80 pointer-events-none'
+        }
+        style={phoneMode ? { paddingTop: 'calc(max(env(safe-area-inset-top), 30px) + 14px)' } : undefined}
+      >
         <AnimatePresence mode="popLayout">
           {notifications.map((notif) => (
-            <NotificationToast key={notif.id} notification={notif} />
+            <NotificationToast key={notif.id} notification={notif} phoneMode={phoneMode} />
           ))}
         </AnimatePresence>
       </div>
@@ -56,7 +68,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
   );
 };
 
-const NotificationToast: React.FC<{ notification: NotificationItem }> = ({ notification }) => {
+const NotificationToast: React.FC<{ notification: NotificationItem; phoneMode?: boolean }> = ({ notification, phoneMode }) => {
   const config = {
     success: { 
         icon: <CheckCircle2 className="w-5 h-5 text-emerald-500" />,
@@ -81,11 +93,13 @@ const NotificationToast: React.FC<{ notification: NotificationItem }> = ({ notif
   return (
     <MotionDiv
       layout
-      initial={{ opacity: 0, x: 20, scale: 0.95 }}
-      animate={{ opacity: 1, x: 0, scale: 1 }}
-      exit={{ opacity: 0, x: 20, scale: 0.95 }}
+      initial={phoneMode ? { opacity: 0, y: -16, scale: 0.98 } : { opacity: 0, x: 20, scale: 0.95 }}
+      animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+      exit={phoneMode ? { opacity: 0, y: -16, scale: 0.98 } : { opacity: 0, x: 20, scale: 0.95 }}
       transition={{ duration: 0.2 }}
-      className="pointer-events-auto bg-[#020610] border border-white/10 rounded-lg shadow-xl p-4 flex items-start gap-3 w-full"
+      className={`pointer-events-auto bg-[#020610] border border-white/10 shadow-xl flex items-start gap-3 w-full ${
+        phoneMode ? 'rounded-xl p-3' : 'rounded-lg p-4'
+      }`}
     >
       <div className="shrink-0 mt-0.5">
         {icon}

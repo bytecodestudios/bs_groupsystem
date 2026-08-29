@@ -29,3 +29,14 @@ Config.AppSettings = {
         TriggerEvent("bs_groupsystem:client:toggle", false)
     end,
 }
+
+---phone app integration
+---supported: sd-phone (also registers under lb-phone)
+Config.PhoneApp = {
+    identifier = "bsgroup",             -- unique app id, never shown to players
+    name = "Groups",                    -- home screen + App Store display name
+    description = "Create and manage your groups.",
+    developer = "Bytecode Studios",
+    defaultApp = true,                  -- true = pre-installed, false = App Store download
+    icon = ('https://cfx-nui-%s/web/icon.svg'):format(GetCurrentResourceName()),
+}

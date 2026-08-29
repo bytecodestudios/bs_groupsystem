@@ -38,6 +38,7 @@ export const transformParties = (parties: any, myCitizenId: string, canSeeIllega
                 name: r.name,
                 isOnline: true
             })),
+            jobOffer: party.jobOffer || null,
             isLeader: party.leader === myCitizenId
         };
         groups.push(transformed);
@@ -76,6 +77,7 @@ export const transformSingleGroup = (party: any, myCitizenId: string): Group => 
             name: r.name,
             isOnline: true
         })),
+        jobOffer: party.jobOffer || null,
         isLeader: party.leader === myCitizenId
     };
 };

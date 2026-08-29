@@ -7,7 +7,7 @@ main frameworks out of the box.
 ## Documentation
 
 Full guides are available here:
-https://bytecode-studios.gitbook.io/cadburry
+https://bytecode-studios.gitbook.io/org/scripts/groups
 
 ## What it can do
 
@@ -36,7 +36,9 @@ automatically based on what your server is running.
 
 **Interface**
 - Clean, responsive menu for finding and managing groups.
-- Built in support for the `kartik-laptop` app.
+- Built in support for the `kartik-laptop` app and the `sd-phone` phone app
+  (also registered under `lb-phone`). Each integration lives in its own bridge
+  adapter under `bridge/apps/`, so adding another host is self-contained.
 
 ## Requirements
 
@@ -44,10 +46,10 @@ automatically based on what your server is running.
 
 ## Installation
 
-1. Place the `cad-groupsystem` folder inside your server's `resources` folder.
+1. Place the `bs_groups` folder inside your server's `resources` folder.
 2. Make sure `ox_lib` is installed and starts before this resource.
 3. Open `config.lua` and adjust the settings to your liking.
-4. Add `ensure cad-groupsystem` to your server config file.
+4. Add `ensure bs_groups` to your server config file.
 
 ## Configuration
 
@@ -59,6 +61,7 @@ All settings live in `config.lua`.
 | `Config.StartingPartyCooldown` | How long players must wait after the server starts before creating groups, in minutes. |
 | `Config.AllowLeavePartyDuringJob` | Whether members can leave or be kicked while a job is active. |
 | `Config.AppSettings` | Settings for the laptop app integration, such as `kartik-laptop`. |
+| `Config.PhoneApp` | Settings for the phone app integration (`sd-phone` / `lb-phone`): app name, icon, whether it is pre-installed, etc. |
 
 ## How players open it
 

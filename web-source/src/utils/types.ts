@@ -49,8 +49,18 @@ export interface Group {
   status: 'Recruiting' | 'Full' | 'Active';
   partyTasks: GroupTask[];
   requests: Member[];
+  jobOffer?: JobOffer | null;
   isLeader?: boolean;
   isIllegal?: boolean;
+}
+
+export interface JobOffer {
+  job: string;
+  title: string;
+  description: string;
+  icon?: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
 }
 
 // Active Tasks UI

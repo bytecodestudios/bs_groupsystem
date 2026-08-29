@@ -99,33 +99,7 @@ export const RequestsTab: React.FC<{ group: Group; onUpdateGroup: (group: Group)
 export const TasksTab: React.FC<{ group: Group, onUpdateGroup: (group: Group) => void, citizenId: string | null }> = ({ group, onUpdateGroup, citizenId }) => {
     const completedTasks = group.partyTasks.filter(t => t.completed).length;
     const progress = group.partyTasks.length > 0 ? (completedTasks / group.partyTasks.length) * 100 : 0;
-    const { addNotification } = useNotifications();
     const { t: tr } = useLocale();
-    
-    const handleUpdateTasks = async (newTasks: GroupTask[]) => {
-        onUpdateGroup({ ...group, partyTasks: newTasks });
-        try {
-            const response = await fetchNui<any>('updateTasks', { tasks: newTasks.map(t => ({ name: t.title, status: t.completed ? 'done' : t.status })) });
-            if (response?.status && response.group && citizenId) {
-                const transformed = transformSingleGroup(response.group, citizenId);
-                onUpdateGroup(transformed);
-            }
-        } catch (err) {
-            console.error("Failed to update tasks:", err);
-        }
-    };
-
-    const handleToggleTask = (task: GroupTask) => {
-        const isCompleting = !task.completed;
-        handleUpdateTasks(group.partyTasks.map(t => t.id === task.id ? { ...t, completed: isCompleting, status: isCompleting ? 'done' : 'pending' } : t));
-        if (isCompleting) {
-            addNotification('success', tr('ui.group_tabs.notif_task_completed'), tr('ui.group_tabs.notif_task_format', task.title));
-        }
-    };
-
-    const handleDeleteTask = (taskId: number) => {
-        handleUpdateTasks(group.partyTasks.filter(t => t.id !== taskId));
-    };
 
     return (
         <div>
@@ -133,7 +107,7 @@ export const TasksTab: React.FC<{ group: Group, onUpdateGroup: (group: Group) =>
                 <div className="flex justify-between items-center mb-2"><span className="text-md font-bold text-foreground">{tr('ui.group_tabs.task_completion')}</span><span className="text-sm font-semibold text-foreground">{tr('ui.group_tabs.done_format', String(completedTasks), String(group.partyTasks.length))}</span></div>
                 <div className="w-full bg-muted rounded-full h-3"><MotionDiv className="bg-gradient-to-r from-emerald-500 to-green-500 h-3 rounded-full" initial={{ width: 0 }} animate={{ width: `${progress}%` }} transition={{ duration: 0.8, ease: "easeOut" }} /></div>
             </div>
-            {group.partyTasks.length > 0 ? <ul className="space-y-3"><AnimatePresence>{group.partyTasks.map(task => <MotionLi key={task.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center bg-secondary/50 p-4 rounded-lg text-sm group border border-border"><button onClick={() => handleToggleTask(task)} className="mr-4 flex-shrink-0">{task.completed ? <CheckCircle className="w-6 h-6 text-green-500" /> : <Circle className="w-6 h-6 text-muted-foreground transition-colors group-hover:text-foreground" />}</button><span className={`flex-grow font-medium ${task.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>{task.title}</span>{group.isLeader && <button onClick={() => handleDeleteTask(task.id)} className="ml-4 text-muted-foreground hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 className="w-4 h-4" /></button>}</MotionLi>)}</AnimatePresence></ul> : <div className="text-center py-16 text-muted-foreground flex flex-col items-center justify-center"><ClipboardEdit className="w-16 h-16 mx-auto mb-4 opacity-30" /><h4 className="text-xl font-semibold text-foreground">{tr('ui.group_tabs.no_tasks_title')}</h4><p className="text-sm mt-1">{tr('ui.group_tabs.no_tasks_desc')}</p></div>}
+            {group.partyTasks.length > 0 ? <ul className="space-y-3"><AnimatePresence>{group.partyTasks.map(task => <MotionLi key={task.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center bg-secondary/50 p-4 rounded-lg text-sm group border border-border"><div className="mr-4 flex-shrink-0">{task.completed ? <CheckCircle className="w-6 h-6 text-green-500" /> : <Circle className="w-6 h-6 text-muted-foreground transition-colors group-hover:text-foreground" />}</div><span className={`flex-grow font-medium ${task.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>{task.title}</span></MotionLi>)}</AnimatePresence></ul> : <div className="text-center py-16 text-muted-foreground flex flex-col items-center justify-center"><ClipboardEdit className="w-16 h-16 mx-auto mb-4 opacity-30" /><h4 className="text-xl font-semibold text-foreground">{tr('ui.group_tabs.no_tasks_title')}</h4><p className="text-sm mt-1">{tr('ui.group_tabs.no_tasks_desc')}</p></div>}
         </div>
     );
 };

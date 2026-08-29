@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Groups from './group/Groups';
+import PhoneApp from './phone/PhoneApp';
 import { motion, AnimatePresence } from "framer-motion"
 import { X } from 'lucide-react';
 import { fetchNui } from '../utils/fetchNui';
@@ -7,12 +8,29 @@ import { useNuiEvent } from '../hooks/useNuiEvent';
 import { TaskWidget } from './misc/TaskWidget';
 import { useNotifications } from './misc/Notification';
 import { useLocale } from '../hooks/useLocale';
+import { isPhoneEnv } from '../utils/phone';
 
 function App() {
-  const [visible, setVisible] = useState(false);
-  const appMode = !(window as any).GetParentResourceName;
+  // Inside a phone the app is shown the moment its host opens it, and it has no
+  // window chrome of its own (the phone frames it). Phone hosts may inject their
+  // helpers slightly after first render, so also re-check on `componentsLoaded`.
+  const [phoneMode, setPhoneMode] = useState(isPhoneEnv());
+  const [visible, setVisible] = useState(phoneMode);
+  const [devAppMode, setDevAppMode] = useState(!(window as any).GetParentResourceName);
+  const appMode = phoneMode || (import.meta.env.MODE === "development" ? devAppMode : !(window as any).GetParentResourceName);
   const { addNotification } = useNotifications();
   const { t } = useLocale();
+
+  useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      if (event.data === 'componentsLoaded' && isPhoneEnv()) {
+        setPhoneMode(true);
+        setVisible(true);
+      }
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, []);
 
   useNuiEvent('setVisible', (data: boolean) => {
     setVisible(data);
@@ -27,10 +45,12 @@ function App() {
     await fetchNui<any>("bsgroup:nui:closeUI", {});
   }
 
-  return (
-    <motion.div className="h-screen w-screen antialiased relative">
-        {/* Task Widget */}
-        <TaskWidget />
+    return (
+    <motion.div className="h-full w-full antialiased relative overflow-hidden">
+        {/* Task Widget — an always-on HUD that belongs to the standalone game
+            overlay. Inside a phone the app is framed by the host and tasks are
+            shown in the phone UI itself, so don't render the floating HUD there. */}
+        {!phoneMode && <TaskWidget />}
 
         {/* Groups */}
         <AnimatePresence>
@@ -55,12 +75,56 @@ function App() {
                 </div>
               )}
 
+              {/* Phone hosts get the dedicated iOS-style app; the laptop/computer
+                  keeps the original desktop Groups layout. */}
               <div className="flex-grow min-h-0">
-                <Groups />
+                {phoneMode ? <PhoneApp /> : <Groups />}
               </div>
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Dev Mode Toolbar */}
+        {import.meta.env.MODE === "development" && (
+          <div className="absolute bottom-4 right-4 flex flex-col space-y-2 z-50 bg-black/80 p-2 rounded-lg backdrop-blur-md text-white text-xs">
+            <div className="flex space-x-2">
+              <button
+                onClick={() => { setPhoneMode(false); setVisible(false); }}
+                className={`px-3 py-1 rounded ${!phoneMode && !visible ? 'bg-blue-500' : 'bg-gray-700 hover:bg-gray-600'}`}
+              >
+                Task View
+              </button>
+              <button
+                onClick={() => { setPhoneMode(false); setVisible(true); }}
+                className={`px-3 py-1 rounded ${!phoneMode && visible ? 'bg-blue-500' : 'bg-gray-700 hover:bg-gray-600'}`}
+              >
+                Laptop UI
+              </button>
+              <button
+                onClick={() => { setPhoneMode(true); setVisible(true); }}
+                className={`px-3 py-1 rounded ${phoneMode && visible ? 'bg-blue-500' : 'bg-gray-700 hover:bg-gray-600'}`}
+              >
+                Phone UI
+              </button>
+            </div>
+            {!phoneMode && visible && (
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => setDevAppMode(false)}
+                  className={`px-3 py-1 rounded flex-1 ${!devAppMode ? 'bg-blue-500' : 'bg-gray-700 hover:bg-gray-600'}`}
+                >
+                  Show Window Chrome
+                </button>
+                <button
+                  onClick={() => setDevAppMode(true)}
+                  className={`px-3 py-1 rounded flex-1 ${devAppMode ? 'bg-blue-500' : 'bg-gray-700 hover:bg-gray-600'}`}
+                >
+                  Hide Window Chrome
+                </button>
+              </div>
+            )}
+          </div>
+        )}
     </motion.div>
   );
 }

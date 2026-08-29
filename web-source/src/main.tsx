@@ -7,6 +7,7 @@ import { library } from "@fortawesome/fontawesome-svg-core";
 import { fas } from "@fortawesome/free-solid-svg-icons";
 import { useLocaleListener } from "./hooks/useLocale";
 import { NotificationProvider } from "./components/misc/Notification";
+import { debugData } from "./utils/debugData";
 
 library.add(fas);
 
@@ -20,6 +21,8 @@ if (isEnvBrowser()) {
     root!.style.backgroundPosition = "center";
     root!.style.webkitUserSelect = "none";
     root!.style.userSelect = "none";
+
+    debugData([{ action: "setVisible", data: true }]);
 }
 
 const Application = () => {

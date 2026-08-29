@@ -1,4 +1,5 @@
 import { isEnvBrowser } from "./misc";
+import { NUI_MOCKS } from "./mockData";
 
 /**
  * Simple wrapper around fetch API tailored for CEF/NUI use. This abstraction
@@ -25,11 +26,21 @@ export async function fetchNui<T = unknown>(
     body: JSON.stringify(data),
   };
 
-  if (isEnvBrowser() && mockData) return mockData;
+  if (isEnvBrowser()) {
+    if (mockData !== undefined) return mockData;
+    if (NUI_MOCKS[eventName] !== undefined) return NUI_MOCKS[eventName] as T;
+  }
+
+  // When hosted inside a phone (sd-phone / lb-phone), use the host-injected
+  // transport, which routes the request to this resource's NUI callbacks.
+  const phoneFetch = (window as any).fetchNui;
+  if (typeof phoneFetch === "function") {
+    return phoneFetch(eventName, data);
+  }
 
   const resourceName = (window as any).GetParentResourceName
     ? (window as any).GetParentResourceName()
-    : "cad-groupsystem";
+    : "bs_groupsystem";
 
   const resp = await fetch(`https://${resourceName}/${eventName}`, options);
 
