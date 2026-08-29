@@ -279,7 +279,7 @@ function Group.setPartyJob(partyId, job)
     local party = parties[partyId]
     if not party then return fail(locale('party_invalid_id')) end
     if not Group.canJoinParty(job) then return fail(locale('party_enough_people')) end
-    if party.currentJob then return fail(locale('party_already_hasjob')) end
+    if party.currentJob and party.currentJob ~= job then return fail(locale('party_already_hasjob')) end
     if partyJobs[job].type == 'illegal' and not Group.hasPartyShadowMod(partyId) then
         return fail(locale('party_certain_mems_req'))
     end
@@ -293,6 +293,82 @@ function Group.setPartyJob(partyId, job)
     return ok()
 end
 exports('setPartyJob', Group.setPartyJob)
+
+--- Offers a registered job to a party's leader, who can accept or reject it from
+--- the group UI (it surfaces under "Pending Actions"). Only one pending offer is
+--- allowed at a time. Returns immediately; the leader responds later via the UI.
+--- On accept the job is assigned to the whole party via setPartyJob.
+---@param partyId number
+---@param job string
+---@param opts? { title?: string, description?: string, icon?: string, confirmLabel?: string, cancelLabel?: string } Optional display overrides. `confirmLabel`/`cancelLabel` change the Accept/Decline button text.
+---@return Result
+function Group.sendJob(partyId, job, opts)
+    opts = opts or {}
+    local party = parties[partyId]
+    if not party then return fail(locale('party_invalid_id')) end
+    if not partyJobs[job] then return fail('Invalid job') end
+    if party.currentJob and party.currentJob ~= job then return fail(locale('party_already_hasjob')) end
+    if party.jobOffer then return fail('Group already has a pending job offer') end
+
+    local leaderId = Group.getPartyLeader(partyId)
+    if not leaderId then return fail(locale('player_not_online')) end
+
+    party.jobOffer = {
+        job = job,
+        title = opts.title or 'Job Offer',
+        description = opts.description or ('Your group has been offered the job: %s'):format(job),
+        icon = opts.icon or partyJobs[job].icon,
+        confirmLabel = opts.confirmLabel,
+        cancelLabel = opts.cancelLabel,
+    }
+    Group.updatePartyData(party.members, 'refreshParties')
+
+    local leader = Players:get(leaderId)
+    if leader then
+        TriggerClientEvent('bs_groupsystem:client:notification', leader.source, {
+            type = 'info',
+            title = party.jobOffer.title,
+            description = party.jobOffer.description,
+            icon = 'fa-solid fa-briefcase',
+        })
+    end
+
+    return ok('Job offer sent to group leader')
+end
+exports('sendJob', Group.sendJob)
+
+--- Resolves a party's pending job offer. Only the leader may respond.
+--- Accepting assigns the job via setPartyJob; declining just clears the offer.
+---@param partyId number
+---@param citizenid string The responding player's citizen id.
+---@param accept boolean
+---@return Result
+function Group.resolveJobOffer(partyId, citizenid, accept)
+    local party = parties[partyId]
+    if not party then return fail(locale('party_invalid_id')) end
+    if not party.jobOffer then return fail('No pending job offer') end
+    if party.leader ~= citizenid then return fail('Only the leader can respond to job offers') end
+
+    local job = party.jobOffer.job
+    party.jobOffer = nil
+
+    if not accept then
+        Group.updatePartyData(party.members, 'refreshParties')
+        TriggerEvent('bs_groupsystem:server:jobOfferResolved', partyId, job, false)
+        return ok('Job offer declined')
+    end
+
+    local result = Group.setPartyJob(partyId, job)
+    -- setPartyJob syncs on success; on failure we still need to clear the offer in the UI.
+    if not result.status then 
+        Group.updatePartyData(party.members, 'refreshParties') 
+        TriggerEvent('bs_groupsystem:server:jobOfferResolved', partyId, job, false)
+    else
+        TriggerEvent('bs_groupsystem:server:jobOfferResolved', partyId, job, true)
+    end
+    return result
+end
+exports('resolveJobOffer', Group.resolveJobOffer)
 
 --- Replaces a party's task list and notifies everyone.
 ---@param partyId number

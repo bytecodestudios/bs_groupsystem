@@ -90,6 +90,14 @@ lib.callback.register('bs_groupsystem:server:processRequest', function(_, data)
     return { status = true, msg = 'Request declined', group = party }
 end)
 
+lib.callback.register('bs_groupsystem:server:resolveJobOffer', function(source, data)
+    local player = Players:get(source)
+    if not player then return fail('Player not found') end
+    local partyId = Group.getPlayerPartyId(player.citizenid)
+    if not partyId then return fail('Party not found') end
+    return Group.resolveJobOffer(partyId, player.citizenid, data.action == 'accept')
+end)
+
 lib.callback.register('bs_groupsystem:server:kickMember', function(source, data)
     local player = Players:get(source)
     if not player then return fail('Player not found') end

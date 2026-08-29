@@ -80,6 +80,10 @@ RegisterNUICallback('bsgroup:nui:processRequest', function(data, cb)
     cb(lib.callback.await('bs_groupsystem:server:processRequest', false, data))
 end)
 
+RegisterNUICallback('bsgroup:nui:resolveJobOffer', function(data, cb)
+    cb(lib.callback.await('bs_groupsystem:server:resolveJobOffer', false, data))
+end)
+
 RegisterNUICallback('bsgroup:nui:promoteLeader', function(data, cb)
     local response = lib.callback.await('bs_groupsystem:server:promoteLeader', false, data)
     cb({ status = response ~= nil, group = response })
@@ -97,18 +101,26 @@ RegisterNUICallback('bsgroup:nui:getPlayerData', function(_, cb)
     cb(lib.callback.await('bs_groupsystem:server:getPlayerData', false))
 end)
 
+RegisterNUICallback('bsgroup:nui:getLocale', function(_, cb)
+    cb(lib.getLocales() or {})
+end)
+
 RegisterNUICallback('bsgroup:nui:closeUI', function(_, cb)
     SetNuiFocus(false, false)
     cb('ok')
 end)
 
 lib.callback.register('bs_groupsystem:client:receiveConfirmationPopup', function(data)
+    data.labels = data.labels or {}
     local alert = lib.alertDialog({
         header = data.title or 'Group',
         content = data.description or data.msg,
         centered = true,
         cancel = true,
-        labels = { confirm = 'Accept', cancel = 'Decline' },
+        labels = {
+            confirm = data.labels.confirm or 'Accept',
+            cancel = data.labels.cancel or 'Decline',
+        },
     })
     return { status = alert == 'confirm' }
 end)
