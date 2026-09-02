@@ -33,6 +33,36 @@
 ---@field partyType PartyType Whether the party is legal or illegal.
 ---@field partyTasks PartyTask[] Task list for the active job.
 ---@field requests PartyRequest[] Pending join requests.
+---@field jobOffer? JobOffer Job awaiting the leader's accept or decline.
+
+---@class JobOffer
+---@field job string Registered job name being offered.
+---@field title string Headline shown in the UI and notification.
+---@field description string Body text explaining the offer.
+---@field icon string Font Awesome icon for the offer.
+---@field confirmLabel? string Accept button label.
+---@field cancelLabel? string Decline button label.
+
+---@class JobOfferOptions
+---@field title? string Overrides the offer headline.
+---@field description? string Overrides the offer body text.
+---@field icon? string Overrides the offer icon.
+---@field confirmLabel? string Overrides the Accept button label.
+---@field cancelLabel? string Overrides the Decline button label.
+
+---@class JobRegistration
+---@field name string Unique job name parties take on.
+---@field icon? string Icon shown while the job is active.
+---@field size? number Maximum concurrent parties (-1 for unlimited).
+---@field type? PartyType Whether the job is legal or illegal.
+
+---@class PartyState
+---@field inParty boolean Whether the player is currently in a party.
+---@field currentJob string|false Active job name, or false when idle.
+
+---@class AppSurface
+---@field sendMessage fun(data: table) Delivers a UI message to the surface.
+---@field notify? fun(data: table) Shows a native notification on the surface.
 
 ---@class PartyJob
 ---@field icon string Icon shown when the job is active.

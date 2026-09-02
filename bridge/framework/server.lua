@@ -25,6 +25,9 @@ if GetResourceState('qb-core') == 'started' or GetResourceState('qbx_core') == '
         return ('%s %s'):format(pd.charinfo.firstname, pd.charinfo.lastname)
     end
 
+    --- Whether a player has admin/moderator permissions.
+    ---@param source number
+    ---@return boolean
     function HasAdmin(source)
         if isQbox then
             return IsPlayerAceAllowed(source, 'command') or exports.qbx_core:HasPermission(source, 'mod')
@@ -69,6 +72,9 @@ if GetResourceState('qb-core') == 'started' or GetResourceState('qbx_core') == '
 elseif GetResourceState('es_extended') == 'started' then
     ESX = exports['es_extended']:getSharedObject()
 
+    --- Whether a player has admin/moderator permissions.
+    ---@param source number
+    ---@return boolean
     function HasAdmin(source)
         return IsPlayerAceAllowed(source, 'command')
     end
@@ -99,6 +105,9 @@ elseif GetResourceState('ox_core') == 'started' then
         return ('%s %s'):format(Player.get('firstName'), Player.get('lastName'))
     end
 
+    --- Whether a player has admin/moderator permissions.
+    ---@param source number
+    ---@return boolean
     function HasAdmin(source)
         local Player = Ox.GetPlayer(source)
         return IsPlayerAceAllowed(source, 'command') or (Player and Player.hasPermission('group.admin'))

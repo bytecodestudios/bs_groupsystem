@@ -1,8 +1,8 @@
 ---@class GroupClient
 Group = {}
 
---- Sends a message to the UI, routed through the active app surface (laptop,
---- phone, ...) or the standalone NUI instance when none owns the UI.
+--- Sends a message to the UI through the active app surface, or the standalone
+--- NUI instance when no surface owns it.
 ---@param data table
 function Group.sendToApp(data)
     Apps.sendMessage(data)
@@ -15,10 +15,8 @@ function Group.setLocales()
     Group.sendToApp({ action = 'setLocale', data = localeData })
 end
 
---- Pushes locale strings to the UI with a few retries. When the app is hosted by
---- a surface (phone/laptop) the iframe can mount a moment after we're told it
---- opened, so a single push may arrive before the React locale listener exists.
---- Re-sending over ~1s ensures the strings land regardless of that race.
+--- Pushes locale strings with retries over ~1s, since a hosted iframe can mount
+--- after the open event and miss a single push.
 function Group.setLocalesRetry()
     CreateThread(function()
         for _ = 1, 4 do
@@ -34,14 +32,9 @@ function Group.setVisible(visible)
     Group.sendToApp({ action = 'setVisible', data = visible })
 end
 
--- -----------------------------------------------------------------------------
--- UI facing events
--- -----------------------------------------------------------------------------
-
 RegisterNetEvent('bs_groupsystem:client:updatePhoneData', function(data)
     if not data or data.app ~= 'party' then return end
-    -- Party refreshes drive both the interactive app (active surface) and the
-    -- always-on task HUD in the standalone NUI frame, so use sendData.
+    -- Party refreshes drive both the app surface and the always-on task HUD.
     Apps.sendData({ action = data.action, data = data })
 end)
 
@@ -49,11 +42,8 @@ RegisterNetEvent('bs_groupsystem:client:notification', function(data)
     local title = data.title or 'Group'
     local body = data.description or data.msg
 
-    -- Prefer a surface's native notification (e.g. sd-phone's banner) so the
-    -- player is alerted even when the app isn't open. Falls back to an in-app
-    -- notification message when no surface provides one.
-    -- Note: data.icon is a Font Awesome name (in-app use), not an image URL, so
-    -- it is not forwarded as the banner image; the group app icon is used.
+    -- Prefer a surface's native banner so the player is alerted with the app
+    -- closed. data.icon is a Font Awesome name, not an image URL.
     local delivered = Apps.notify({
         title = title,
         body  = body,
@@ -84,7 +74,7 @@ CreateThread(function()
     Group.setLocales()
 end)
 
--- Standalone keybind, skipped when the app is hosted by a surface (laptop/phone).
+-- Standalone keybind, skipped when a surface (laptop/phone) hosts the app.
 if Apps.hasSurface() then return end
 
 RegisterKeyMapping('openGroups', 'Open Groups', 'keyboard', 'F6')

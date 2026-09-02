@@ -1,6 +1,8 @@
 ---@type table<number, PlayerData>
 local store = {}
 
+--- Player registry, keyed by server id and searchable by citizen id.
+---@class PlayerStore
 Players = {}
 
 setmetatable(store , {

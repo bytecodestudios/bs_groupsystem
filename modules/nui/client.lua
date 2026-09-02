@@ -1,8 +1,12 @@
+--- Guards against a player spamming join requests while one is in flight.
 local isRequesting = false
+
+--- Whether the player has toggled the VPN on in the UI this session.
 local vpnConnected = false
 
 --- Wraps a server callback response into the { status, msg } shape the UI expects.
 ---@param name string Server callback name.
+---@return fun(data: table, cb: fun(response: Result))
 local function forwardCallback(name)
     return function(data, cb)
         local response = lib.callback.await(name, false, data)

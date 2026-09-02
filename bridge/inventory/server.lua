@@ -1,5 +1,8 @@
+--- Whether a player owns the item required to see and run illegal jobs.
+---@param source number
+---@return boolean|nil
 function CanSeeIllegalParties(source)
-    -- YOU CAN ADD ITEM OR ANY OTHER CHECK TO BE ABLE TO WORK IN ILLEGAL PARTY JOB
+    -- Swap this for any item or condition your server uses to gate illegal jobs.
     if GetResourceState('ox_inventory') == 'started' then
         local count = exports.ox_inventory:GetItemCount(source, 'shadowmod')
         return count and count > 0

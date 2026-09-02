@@ -10,10 +10,6 @@ local parties = {}
 --- Timestamp before which new parties cannot be created.
 local partyUnlockTime = os.time() + (Config.StartingPartyCooldown * 60)
 
--- -----------------------------------------------------------------------------
--- Internal helpers
--- -----------------------------------------------------------------------------
-
 --- Builds a standard failure result.
 ---@param msg string
 ---@return Result
@@ -84,8 +80,7 @@ local function isPartyNameUnique(name)
     return true
 end
 
---- Detaches a member from a party, clearing their state and notifying them.
---- Does not validate permissions.
+--- Detaches a member, clearing their state and notifying them. No permission check.
 ---@param party Party
 ---@param partyId number
 ---@param citizenid string
@@ -109,10 +104,6 @@ local function detachMember(party, partyId, citizenid)
     return member
 end
 
--- -----------------------------------------------------------------------------
--- UI sync
--- -----------------------------------------------------------------------------
-
 --- Pushes party data to every member's phone/app.
 ---@param members PartyMember[] Members to notify.
 ---@param action string UI action (refreshParties, refreshTasksDetail, backToParties).
@@ -127,10 +118,6 @@ function Group.updatePartyData(members, action, tasks)
         end
     end
 end
-
--- -----------------------------------------------------------------------------
--- Getters
--- -----------------------------------------------------------------------------
 
 --- Sends an ox_lib notification to every member of a party.
 ---@param partyId number
@@ -267,10 +254,6 @@ function Group.canJoinParty(job)
 end
 exports('canJoinParty', Group.canJoinParty)
 
--- -----------------------------------------------------------------------------
--- Jobs and tasks
--- -----------------------------------------------------------------------------
-
 --- Assigns a registered job to a party.
 ---@param partyId number
 ---@param job string
@@ -294,13 +277,11 @@ function Group.setPartyJob(partyId, job)
 end
 exports('setPartyJob', Group.setPartyJob)
 
---- Offers a registered job to a party's leader, who can accept or reject it from
---- the group UI (it surfaces under "Pending Actions"). Only one pending offer is
---- allowed at a time. Returns immediately; the leader responds later via the UI.
---- On accept the job is assigned to the whole party via setPartyJob.
+--- Offers a job to the party leader, who accepts or declines it from the UI.
+--- Returns immediately; only one pending offer is allowed at a time.
 ---@param partyId number
 ---@param job string
----@param opts? { title?: string, description?: string, icon?: string, confirmLabel?: string, cancelLabel?: string } Optional display overrides. `confirmLabel`/`cancelLabel` change the Accept/Decline button text.
+---@param opts? JobOfferOptions Display overrides for the offer dialog.
 ---@return Result
 function Group.sendJob(partyId, job, opts)
     opts = opts or {}
@@ -359,7 +340,7 @@ function Group.resolveJobOffer(partyId, citizenid, accept)
     end
 
     local result = Group.setPartyJob(partyId, job)
-    -- setPartyJob syncs on success; on failure we still need to clear the offer in the UI.
+    -- setPartyJob syncs on success; on failure still clear the offer in the UI.
     if not result.status then 
         Group.updatePartyData(party.members, 'refreshParties') 
         TriggerEvent('bs_groupsystem:server:jobOfferResolved', partyId, job, false)
@@ -385,7 +366,7 @@ end
 exports('updatePartyTasks', Group.updatePartyTasks)
 
 --- Registers a job that parties can take on.
----@param data { name: string, icon?: string, size?: number, type?: PartyType }
+---@param data JobRegistration
 ---@return boolean registered False if the job already exists.
 function Group.registerJob(data)
     if partyJobs[data.name] then return false end
@@ -397,10 +378,6 @@ function Group.registerJob(data)
     return true
 end
 exports('registerJob', Group.registerJob)
-
--- -----------------------------------------------------------------------------
--- Member iteration
--- -----------------------------------------------------------------------------
 
 --- Runs a callback for every member of a party.
 ---@param partyId number
@@ -414,10 +391,6 @@ function Group.sendToPartyMembers(partyId, cb)
     end
 end
 exports('sendToPartyMembers', Group.sendToPartyMembers)
-
--- -----------------------------------------------------------------------------
--- Party lifecycle
--- -----------------------------------------------------------------------------
 
 --- Creates a party led by the given player.
 ---@param source number
@@ -599,10 +572,6 @@ function Group.timedOutPlayer(citizenid)
         SendLog(nil, 'party', 'partyTimedOut', citizenid .. ' was timedout and was removed from party')
     end
 end
-
--- -----------------------------------------------------------------------------
--- Framework and lifecycle events
--- -----------------------------------------------------------------------------
 
 --- Restores a player's party state after they (re)connect.
 RegisterNetEvent('bs_groupsystem:server:initialised', function(player)

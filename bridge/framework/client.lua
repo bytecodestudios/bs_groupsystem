@@ -1,6 +1,8 @@
 if GetResourceState('qb-core') == 'started' then
     local QBCore = exports['qb-core']:GetCoreObject()
 
+    --- Whether the player is in a state that blocks group actions.
+    ---@return boolean
     function CheckStates()
         local ped = PlayerPedId()
         local data = QBCore.Functions.GetPlayerData()
@@ -12,6 +14,8 @@ if GetResourceState('qb-core') == 'started' then
     end
 
 elseif GetResourceState('qbx_core') == 'started' then
+    --- Whether the player is in a state that blocks group actions.
+    ---@return boolean
     function CheckStates()
         local ped = PlayerPedId()
         local data = exports.qbx_core:GetPlayerData()
@@ -25,6 +29,8 @@ elseif GetResourceState('qbx_core') == 'started' then
 elseif GetResourceState('es_extended') == 'started' then
     ESX = exports.es_extended:getSharedObject()
 
+    --- Whether the player is in a state that blocks group actions.
+    ---@return boolean
     function CheckStates()
         local ped = PlayerPedId()
         return IsPedSwimming(ped)
@@ -34,6 +40,8 @@ elseif GetResourceState('es_extended') == 'started' then
     end
 
 elseif GetResourceState('ox_core') == 'started' then
+    --- Whether the player is in a state that blocks group actions.
+    ---@return boolean
     function CheckStates()
         local ped = PlayerPedId()
         return IsPedSwimming(ped)

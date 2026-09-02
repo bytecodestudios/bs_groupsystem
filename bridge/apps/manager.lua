@@ -1,37 +1,31 @@
---- App surface manager.
----
---- A "surface" is any external UI host that can display this resource's web app
---- inside its own frame: a laptop (kartik-laptop), a phone (sd-phone), etc.
---- Each surface registers an adapter here; the group modules then talk to the
---- UI through `Apps.sendMessage` without caring which surface is active.
+--- App surface manager. A "surface" is any external UI host (kartik-laptop,
+--- sd-phone) hosting this app; modules reach it via `Apps.sendMessage`.
 ---@class AppManager
 Apps = {}
 
 --- Registered surface adapters, keyed by resource name.
----@type table<string, { sendMessage: fun(data: table), notify: (fun(data: table))? }>
+---@type table<string, AppSurface>
 local surfaces = {}
 
---- The surface currently displaying the app, or nil when the standalone
---- (fullscreen NUI) instance owns the UI.
+--- Surface currently displaying the app, or nil for the standalone NUI.
 ---@type string|nil
 local activeSurface = nil
 
 --- Registers a surface adapter.
 ---@param name string Resource name of the surface (e.g. 'sd-phone').
----@param adapter { sendMessage: fun(data: table), notify: (fun(data: table))? } Adapter implementation.
+---@param adapter AppSurface Adapter implementation.
 function Apps.register(name, adapter)
     surfaces[name] = adapter
 end
 
---- Whether at least one app surface is integrated. Used to disable the
---- standalone keybind so the app is only reachable through its host.
+--- Whether any surface is integrated; used to disable the standalone keybind.
 ---@return boolean
 function Apps.hasSurface()
     return next(surfaces) ~= nil
 end
 
---- Marks which surface is currently showing the UI so messages route to it.
---- Pass nil when the surface closes to fall back to the standalone instance.
+--- Marks which surface is showing the UI so messages route to it.
+--- Pass nil on close to fall back to the standalone instance.
 ---@param name string|nil
 function Apps.setActive(name)
     activeSurface = name
@@ -41,17 +35,14 @@ end
 --- NUI instance when no surface owns the UI.
 ---@param data table `{ action = string, data = any }`
 function Apps.sendMessage(data)
-    -- No surface integrated at all: this is a standalone (fullscreen NUI) build.
+    -- No surface integrated: this is a standalone (fullscreen NUI) build.
     if next(surfaces) == nil then
         SendNUIMessage(data)
         return
     end
 
-    -- Prefer the surface that reported itself active. When none has (the host's
-    -- open lifecycle can land a beat after the app's iframe has already mounted
-    -- and started receiving pushes), broadcast to every registered surface so
-    -- live updates still reach the open app instead of being dropped. A closed
-    -- surface simply ignores/queues the message, so this is safe.
+    -- Prefer the active surface; when none reported yet, broadcast to all so
+    -- early pushes are not dropped. Closed surfaces just ignore the message.
     local surface = activeSurface and surfaces[activeSurface]
     if surface then
         surface.sendMessage(data)
@@ -62,30 +53,22 @@ function Apps.sendMessage(data)
     end
 end
 
---- Sends a party data/state push to the interactive app AND to this resource's
---- own persistent NUI layer.
----
---- The interactive Groups UI is hosted by whichever surface is active (phone,
---- laptop), but the always-on task HUD (TaskWidget) lives in the resource's own
---- standalone NUI frame, which is loaded on screen at all times regardless of any
---- surface. Routing data through `sendMessage` alone would only ever reach the
---- surface, leaving the on-screen HUD stale/hidden. This delivers to both.
+--- Pushes party data to both the hosted app and this resource's own NUI layer,
+--- so the always-on task HUD stays in sync alongside the surface.
 ---@param data table `{ action = string, data = any }`
 function Apps.sendData(data)
     Apps.sendMessage(data)
-    -- When a surface exists, `sendMessage` went to the surface only; also feed
-    -- the standalone HUD frame. With no surface, `sendMessage` already targeted
-    -- that same frame, so avoid delivering twice.
+    -- With a surface, sendMessage reached only it; also feed the HUD frame.
+    -- Without one it already targeted that frame, so do not deliver twice.
     if next(surfaces) ~= nil then
         SendNUIMessage(data)
     end
 end
 
---- Shows a notification to the player. When a surface with native notification
---- support (e.g. sd-phone's banner) is integrated it is used regardless of
---- whether the app is currently open, so the player is alerted even with the
---- phone put away. Falls back to an in-app notification message otherwise.
+--- Shows a notification, preferring a surface's native banner so the player is
+--- alerted even with the app closed.
 ---@param data table Notification payload (title/body/...).
+---@return boolean delivered True when a surface handled it.
 function Apps.notify(data)
     for _, surface in pairs(surfaces) do
         if surface.notify then

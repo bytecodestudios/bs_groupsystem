@@ -1,3 +1,6 @@
+--- Builds a standard failure result.
+---@param msg string
+---@return Result
 local function fail(msg) return { status = false, msg = msg } end
 
 lib.callback.register('bs_groupsystem:server:createParty', function(source, data)
