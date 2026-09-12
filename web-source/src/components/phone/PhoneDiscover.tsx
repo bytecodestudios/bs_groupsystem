@@ -27,19 +27,16 @@ const JoinButton: React.FC<{ group: Group; isInGroup: boolean; hasSentRequest: b
 
     let text = t('ui.group_card.request_to_join');
     let disabled = false;
-    // Only the actionable "Request to Join" gets the prominent filled pill.
-    // Every disabled state renders as a compact, subtle chip so it never
-    // dominates the row or crowds the group name.
-    let cls = 'bg-emerald-500 text-black active:bg-emerald-400 px-3.5 py-2';
+    let cls = 'bg-emerald-500 text-black active:bg-emerald-400 px-3 py-1.5 text-[12px]';
 
-    if (isInGroup) { text = t('ui.group_card.already_in_group'); disabled = true; }
+    if (isInGroup) { text = 'Joined'; disabled = true; }
     else if (isFull) { text = t('ui.group_card.group_is_full'); disabled = true; }
-    else if (hasSentRequest) { text = t('ui.group_card.request_sent'); disabled = true; cls = 'bg-sky-400/15 text-sky-300 px-3 py-1.5'; }
+    else if (hasSentRequest) { text = t('ui.group_card.request_sent'); disabled = true; cls = 'bg-sky-400/15 text-sky-300 px-2.5 py-1 text-[11px]'; }
     else if (group.joinType === 'Closed') { text = t('ui.group_card.closed'); disabled = true; }
     else if (group.joinType === 'Invite Only') { text = t('ui.group_card.invite_only'); disabled = true; }
     else if (group.status !== 'Recruiting') { text = t('ui.group_card.not_recruiting'); disabled = true; }
 
-    if (disabled && cls.startsWith('bg-emerald')) cls = 'bg-white/[0.06] text-white/40 px-3 py-1.5';
+    if (disabled && cls.startsWith('bg-emerald')) cls = 'bg-white/[0.06] text-white/40 px-2.5 py-1 text-[11px]';
 
     return (
         <button
@@ -136,19 +133,26 @@ export const PhoneDiscover: React.FC<Props> = ({
                     <div className="space-y-2.5">
                         {filtered.map((g, i) => (
                             <motion.div key={g.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i * 0.03, 0.3) }}>
-                                <Card className={`p-3.5 ${g.isIllegal ? '!border-red-500/20' : ''}`}>
-                                    <div className="flex items-center gap-3">
-                                        <Avatar name={g.name} size={44} className={g.isIllegal ? '!from-red-500/30 !to-red-500/5' : ''} />
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-[16px] font-semibold truncate flex items-center gap-1.5">
-                                                {g.name}
-                                                {g.isIllegal && <ShieldAlert className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />}
-                                            </p>
-                                            <div className="flex items-center gap-1.5 text-[12px] text-white/40 mt-0.5 min-w-0">
-                                                <Users2 className="w-3.5 h-3.5 flex-shrink-0" />
-                                                <span className="flex-shrink-0">{g.members.length}/{g.maxMembers}</span>
-                                                <span className="w-1 h-1 rounded-full bg-white/20 flex-shrink-0" />
-                                                <span className="truncate">{g.status}</span>
+                                <Card className="p-3.5">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                                            <Avatar name={g.name} size={40} className="flex-shrink-0" />
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="text-[15px] font-bold text-white truncate">{g.name}</div>
+                                                    {g.isIllegal && (
+                                                        <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-red-500/15 text-red-400 border border-red-500/20 flex items-center gap-0.5 flex-shrink-0">
+                                                            <ShieldAlert className="w-2.5 h-2.5 text-red-400" />
+                                                            Illegal
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center gap-1.5 text-[11px] text-white/40 mt-0.5">
+                                                    <Users2 className="w-3.5 h-3.5 flex-shrink-0 text-white/35" />
+                                                    <span>{g.members.length}/{g.maxMembers}</span>
+                                                    <span className="w-1 h-1 rounded-full bg-white/20" />
+                                                    <span>{g.status}</span>
+                                                </div>
                                             </div>
                                         </div>
                                         <JoinButton

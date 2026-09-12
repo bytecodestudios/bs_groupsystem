@@ -35,16 +35,31 @@ export async function fetchNui<T = unknown>(
   // transport, which routes the request to this resource's NUI callbacks.
   const phoneFetch = (window as any).fetchNui;
   if (typeof phoneFetch === "function") {
-    return phoneFetch(eventName, data);
+    try {
+      const res = await phoneFetch(eventName, data);
+      return (res ?? {}) as T;
+    } catch {
+      return {} as T;
+    }
   }
 
-  const resourceName = (window as any).GetParentResourceName
-    ? (window as any).GetParentResourceName()
-    : "bs_groupsystem";
+  let resourceName = "bs_groupsystem";
+  if ((window as any).GetParentResourceName) {
+    try {
+      const parent = (window as any).GetParentResourceName();
+      if (parent && !parent.includes("phone") && !parent.includes("mobile")) {
+        resourceName = parent;
+      }
+    } catch {
+      resourceName = "bs_groupsystem";
+    }
+  }
 
-  const resp = await fetch(`https://${resourceName}/${eventName}`, options);
-
-  const respFormatted = await resp.json();
-
-  return respFormatted;
+  try {
+    const resp = await fetch(`https://${resourceName}/${eventName}`, options);
+    const respFormatted = await resp.json();
+    return respFormatted;
+  } catch {
+    return {} as T;
+  }
 }

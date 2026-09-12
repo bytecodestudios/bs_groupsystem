@@ -135,20 +135,21 @@ export function Segmented<T extends string>({
 }
 
 // iOS toggle switch.
-export const Switch: React.FC<{ checked: boolean; onChange: () => void; disabled?: boolean }> = ({
+export const Switch: React.FC<{ checked: boolean; onChange: () => void; disabled?: boolean; activeClass?: string }> = ({
     checked,
     onChange,
     disabled,
+    activeClass = 'bg-emerald-500',
 }) => (
     <button
         onClick={disabled ? undefined : onChange}
         disabled={disabled}
         className={`w-[51px] h-[31px] rounded-full p-0.5 flex-shrink-0 transition-colors duration-300 ${
-            checked ? 'bg-emerald-500' : 'bg-white/15'
+            checked ? activeClass : 'bg-white/15'
         } ${disabled ? 'opacity-40' : ''}`}
     >
         <motion.div
-            className="w-[27px] h-[27px] bg-white rounded-full"
+            className="w-[27px] h-[27px] bg-white rounded-full shadow-md"
             animate={{ x: checked ? 20 : 0 }}
             transition={{ type: 'spring', stiffness: 500, damping: 32 }}
         />

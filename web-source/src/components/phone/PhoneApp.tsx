@@ -128,7 +128,7 @@ const PhoneApp: React.FC = () => {
                                             <button
                                                 key={tb.id}
                                                 onClick={() => setTab(tb.id)}
-                                                className="relative flex flex-col items-center gap-0.5 flex-1 py-1 active:opacity-60 transition-opacity"
+                                                className="relative flex flex-col items-center gap-0.5 flex-1 py-1 active:opacity-60 transition-opacity outline-none focus:outline-none focus-visible:outline-none"
                                             >
                                                 <tb.icon
                                                     className="w-[20px] h-[20px] transition-colors"

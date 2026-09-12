@@ -398,7 +398,7 @@ exports('sendToPartyMembers', Group.sendToPartyMembers)
 ---@param maxMembers? number
 ---@param joinType? JoinType
 ---@return Result
-function Group.createParty(source, partyName, maxMembers, joinType)
+function Group.createParty(source, partyName, maxMembers, joinType, partyType)
     if partyUnlockTime > os.time() then return fail(locale('party_nojobs_yet')) end
     local player = Players:get(source)
     if not player then return fail(locale('player_not_online')) end
@@ -414,7 +414,7 @@ function Group.createParty(source, partyName, maxMembers, joinType)
         joinType = joinType or 'Request to Join',
         icon = 'fa-solid fa-people-group',
         currentJob = false,
-        partyType = 'legal',
+        partyType = partyType or 'legal',
         partyTasks = {},
         requests = {},
     }
@@ -596,4 +596,41 @@ AddEventHandler('playerDropped', function()
     SetTimeout(Config.PartyTimeout, function()
         Group.timedOutPlayer(player.citizenid)
     end)
+end)
+
+--- Disbands an illegal party if the given player is its leader.
+---@param source number
+function Group.disbandIllegalPartyOnVpnDisconnect(source)
+    local player = Players:get(source)
+    if not player then return end
+    local partyId = Group.getPlayerPartyId(player.citizenid)
+    if not partyId then return end
+
+    local party = parties[partyId]
+    if party and party.partyType == 'illegal' and party.leader == player.citizenid then
+        Group.disbandParty(source, partyId, player.citizenid)
+    end
+end
+exports('disbandIllegalPartyOnVpnDisconnect', Group.disbandIllegalPartyOnVpnDisconnect)
+
+RegisterNetEvent('bs_groupsystem:server:disbandIllegalPartyOnVpnDisconnect', function()
+    local src = source
+    Group.disbandIllegalPartyOnVpnDisconnect(src)
+end)
+
+--- Periodically verifies that leaders of illegal parties still possess VPN access.
+CreateThread(function()
+    while true do
+        Wait(5000)
+        for partyId, party in pairs(parties) do
+            if party and party.partyType == 'illegal' then
+                local leaderPlayer = Players:get(party.leader)
+                if leaderPlayer then
+                    if not CanSeeIllegalParties(leaderPlayer.source) then
+                        Group.disbandParty(leaderPlayer.source, partyId, party.leader)
+                    end
+                end
+            end
+        end
+    end
 end)

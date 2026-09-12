@@ -4,14 +4,14 @@
 function CanSeeIllegalParties(source)
     -- Swap this for any item or condition your server uses to gate illegal jobs.
     if GetResourceState('ox_inventory') == 'started' then
-        local count = exports.ox_inventory:GetItemCount(source, 'shadowmod')
+        local count = exports.ox_inventory:GetItemCount(source, 'vpn')
         return count and count > 0
     elseif GetResourceState('tgiann-inventory') == 'started' then
-        local count = exports['tgiann-inventory']:GetItemCount(source, 'shadowmod')
+        local count = exports['tgiann-inventory']:GetItemCount(source, 'vpn')
         return count and count > 0
     elseif GetResourceState('qb-inventory') == 'started' then
-        return exports['qb-inventory']:HasItem(source, 'shadowmod')
+        return exports['qb-inventory']:HasItem(source, 'vpn')
     elseif GetResourceState('ps-inventory') == 'started' then
-        return exports['ps-inventory']:HasItem(source, 'shadowmod')
+        return exports['ps-inventory']:HasItem(source, 'vpn')
     end
 end

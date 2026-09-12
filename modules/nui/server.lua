@@ -4,7 +4,11 @@
 local function fail(msg) return { status = false, msg = msg } end
 
 lib.callback.register('bs_groupsystem:server:createParty', function(source, data)
-    return Group.createParty(source, data.partyName, data.maxMembers, data.joinType)
+    local isIllegal = data.isIllegal or data.partyType == 'illegal'
+    if isIllegal and not CanSeeIllegalParties(source) then
+        return fail('VPN required to create an illegal group')
+    end
+    return Group.createParty(source, data.partyName, data.maxMembers, data.joinType, isIllegal and 'illegal' or 'legal')
 end)
 
 lib.callback.register('bs_groupsystem:server:requestJoinGroup', function(source, data)

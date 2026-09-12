@@ -29,9 +29,11 @@ export const transformParties = (parties: any, myCitizenId: string, canSeeIllega
             status: isActive ? 'Active' : (isFull ? 'Full' : 'Recruiting'),
             partyTasks: (party.partyTasks || []).map((t: any, index: number) => ({
                 id: index,
-                title: t.name,
+                title: t.name || t.title,
                 completed: t.status === 'done',
-                status: t.status || 'pending'
+                status: t.status || 'pending',
+                type: t.type,
+                progress: t.progress
             })),
             requests: (party.requests || []).map((r: any) => ({
                 id: r.id,
@@ -39,6 +41,7 @@ export const transformParties = (parties: any, myCitizenId: string, canSeeIllega
                 isOnline: true
             })),
             jobOffer: party.jobOffer || null,
+            isIllegal: party.partyType === 'illegal',
             isLeader: party.leader === myCitizenId
         };
         groups.push(transformed);
@@ -68,9 +71,11 @@ export const transformSingleGroup = (party: any, myCitizenId: string): Group => 
         status: isActive ? 'Active' : (isFull ? 'Full' : 'Recruiting'),
         partyTasks: (party.partyTasks || []).map((t: any, index: number) => ({
             id: index,
-            title: t.name,
+            title: t.name || t.title,
             completed: t.status === 'done',
-            status: t.status || 'pending'
+            status: t.status || 'pending',
+            type: t.type,
+            progress: t.progress
         })),
         requests: (party.requests || []).map((r: any) => ({
             id: r.id,
@@ -78,6 +83,7 @@ export const transformSingleGroup = (party: any, myCitizenId: string): Group => 
             isOnline: true
         })),
         jobOffer: party.jobOffer || null,
+        isIllegal: party.partyType === 'illegal',
         isLeader: party.leader === myCitizenId
     };
 };

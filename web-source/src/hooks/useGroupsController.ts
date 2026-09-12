@@ -116,7 +116,8 @@ export function useGroupsController() {
         const response = await fetchNui<{ status: boolean, msg: string }>("bsgroup:nui:createParty", {
             partyName: data.name,
             maxMembers: data.maxMembers,
-            joinType: data.joinType
+            joinType: data.joinType,
+            isIllegal: data.isIllegal,
         });
         if (response?.status) {
             fetchGroupsData();

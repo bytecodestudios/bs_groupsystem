@@ -117,12 +117,6 @@ export const TaskWidget: React.FC<TaskWidgetProps> = () => {
     if (lines > 1) {
       extraHeight += (lines - 1) * 18;
     }
-
-    if (activeTask.type === 'numerical' && activeTask.progress) {
-      extraHeight += 24; // Space for text counter
-    } else if (activeTask.type === 'numerical-progress' && activeTask.progress) {
-      extraHeight += 44; // Space for progress bar + text
-    }
   }
 
   return (
@@ -143,11 +137,16 @@ export const TaskWidget: React.FC<TaskWidgetProps> = () => {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="mb-4 pl-1"
+          className="mb-4 pl-[9px]"
         >
           <div className="flex items-center gap-2 mb-1">
-            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.8)]"></div>
-            <h2 className="text-xs font-semibold tracking-[0.2em] text-blue-400 uppercase">{t('ui.task_widget.available_tasks')}</h2>
+            <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+            <h2 
+              className="text-xs font-bold tracking-[0.2em] text-blue-400 uppercase"
+              style={{ textShadow: '0px 1px 4px rgba(0,0,0,0.95), 0px 0px 6px rgba(0,0,0,0.95)' }}
+            >
+              {t('ui.task_widget.available_tasks')}
+            </h2>
           </div>
           {/* Increased width from w-8 to w-24 */}
           <div className="h-[1px] w-28 bg-gradient-to-r from-blue-500 to-transparent"></div>
@@ -167,45 +166,32 @@ export const TaskWidget: React.FC<TaskWidgetProps> = () => {
               
               // Calculate dynamic styles based on position
               let yPos = 0;
-              let scale = 1;
               let opacity = 1;
-              let xPos = 6;
-              let blur = 0;
 
               if (offset === -1) { // Done (Above)
                 yPos = -42;
-                scale = 0.9;
-                opacity = 0.4;
-                xPos = 6;
-                blur = 0.5;
+                opacity = 0.85;
               } else if (offset === 0) { // Active
                 yPos = 0;
-                scale = 1.1;
                 opacity = 1;
-                xPos = 22; // Active pops out
-                blur = 0;
               } else if (offset === 1) { // Next
                 yPos = 42 + extraHeight; // Push down by extra content height
-                scale = 0.95;
-                opacity = 0.6;
-                xPos = 12;
-                blur = 0.5;
+                opacity = 0.85;
               }
 
               return (
                 <motion.div
                   key={task.id}
                   layoutId={String(task.id)}
-                  initial={{ opacity: 0, y: yPos + 20, filter: 'blur(4px)' }}
+                  initial={{ opacity: 0, y: yPos + 20 }}
                   animate={{
                     y: yPos,
-                    x: xPos,
-                    scale: scale,
+                    x: 0,
+                    scale: 1,
                     opacity: opacity,
-                    filter: `blur(${blur}px)`,
                     zIndex: 50 - Math.abs(offset),
                   }}
-                  exit={{ opacity: 0, scale: 0.8, filter: 'blur(4px)', transition: { duration: 0.3 } }}
+                  exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.3 } }}
                   transition={{
                     type: "spring",
                     stiffness: 180, // Lower stiffness for more fluid motion
@@ -221,8 +207,8 @@ export const TaskWidget: React.FC<TaskWidgetProps> = () => {
                     {offset < 1 && i < tasks.length - 1 && (
                        <motion.div 
                          initial={{ height: 0 }}
-                         animate={{ height: 28 + (isActive ? extraHeight : 0) }}
-                         className={`absolute top-full left-1/2 -translate-x-1/2 w-[1px] bg-slate-800/50 -z-10 ${isActive ? 'opacity-0' : 'opacity-100'}`} 
+                         animate={{ height: 18 + (isActive ? extraHeight : 0) }}
+                         className="absolute top-full left-1/2 -translate-x-1/2 w-[1px] bg-slate-300/60 -z-10" 
                        />
                     )}
 
@@ -234,9 +220,9 @@ export const TaskWidget: React.FC<TaskWidgetProps> = () => {
                                 initial={{ scale: 0, rotate: -45 }}
                                 animate={{ scale: 1, rotate: 0 }}
                                 exit={{ scale: 0 }}
-                                className="text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.3)]"
+                                className="text-emerald-400"
+                                style={{ filter: 'drop-shadow(0px 1px 3px rgba(0,0,0,0.9))' }}
                             >
-                                <div className="absolute inset-0 bg-emerald-500/10 blur-[2px] rounded-full" />
                                 <Check size={18} strokeWidth={3} />
                             </motion.div>
                         ) : isActive ? (
@@ -245,13 +231,6 @@ export const TaskWidget: React.FC<TaskWidgetProps> = () => {
                                 layoutId="activeRing"
                                 className="relative w-full h-full flex items-center justify-center"
                             >
-                                {/* Ambient Glow */}
-                                <motion.div 
-                                    className="absolute inset-0 bg-blue-500/40 blur-[5px] rounded-full"
-                                    animate={{ opacity: [0.3, 0.6, 0.3] }}
-                                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                                />
-                                
                                 {/* Rotating Gradient Ring */}
                                 <motion.svg 
                                     viewBox="0 0 24 24" 
@@ -270,22 +249,22 @@ export const TaskWidget: React.FC<TaskWidgetProps> = () => {
                                 </motion.svg>
 
                                 {/* Inner Core */}
-                                <div className="w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_6px_rgba(255,255,255,0.9)] z-10" />
+                                <div className="w-1.5 h-1.5 bg-white rounded-full z-10" />
                             </motion.div>
                         ) : (
                             <motion.div 
                                 key="pending"
                                 initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 0.5, scale: 1 }}
+                                animate={{ opacity: 0.95, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.8 }}
                                 transition={{ duration: 0.4 }}
-                                className="text-slate-600"
+                                className="text-slate-100"
                             >
                                 {/* Differentiate Pending Icons based on type */}
                                 {task.type === 'numerical' ? (
-                                    <div className="opacity-70"><Hash size={14} /></div>
+                                    <div><Hash size={14} /></div>
                                 ) : task.type === 'numerical-progress' ? (
-                                    <div className="opacity-70"><BarChart3 size={14} /></div>
+                                    <div><BarChart3 size={14} /></div>
                                 ) : (
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeDasharray="4 4" className="rotate-45">
                                       <circle cx="12" cy="12" r="10" />
@@ -297,49 +276,26 @@ export const TaskWidget: React.FC<TaskWidgetProps> = () => {
                   </div>
 
                   {/* Task Content */}
-                  <motion.div layout className={`flex flex-col transition-colors duration-500 ${isActive ? 'text-slate-100' : isDone ? 'text-slate-500 line-through decoration-slate-600/50' : 'text-slate-500'}`}>
-                    <span className={`font-medium tracking-tight max-w-[200px] block ${isActive ? 'text-base shadow-black drop-shadow-md leading-tight' : 'text-xs truncate'}`}>
+                  <motion.div 
+                    layout 
+                    className={`flex flex-col transition-colors duration-500 ${
+                      isActive 
+                        ? 'text-white font-bold' 
+                        : isDone 
+                        ? 'text-emerald-300 font-semibold line-through decoration-emerald-400' 
+                        : 'text-slate-100 font-semibold'
+                    }`}
+                  >
+                    <span 
+                      className={`tracking-tight max-w-[200px] block ${
+                        isActive 
+                          ? 'text-base font-bold text-white leading-tight' 
+                          : 'text-xs font-semibold truncate'
+                      }`}
+                      style={{ textShadow: '0px 1px 3px rgba(0,0,0,0.95), 0px 0px 5px rgba(0,0,0,0.95)' }}
+                    >
                       {task.title}
                     </span>
-                    {isActive && (
-                      <div className="flex flex-col items-start">
-                          
-                          {/* Numerical Progress (Text Only) */}
-                          {task.type === 'numerical' && task.progress && (
-                              <motion.div 
-                                initial={{ opacity: 0, y: 5 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="mt-1 text-xs text-blue-300 font-mono flex items-center gap-1"
-                              >
-                                <span className="text-blue-200 font-bold">{task.progress.current}</span>
-                                <span className="text-blue-500/60">/</span>
-                                <span className="opacity-70">{task.progress.target} {task.progress.unit}</span>
-                              </motion.div>
-                          )}
-
-                          {/* Numerical Progress (Bar) */}
-                          {task.type === 'numerical-progress' && task.progress && (
-                              <motion.div 
-                                initial={{ opacity: 0, y: 5 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="mt-2 w-32"
-                              >
-                                <div className="flex justify-between text-[0.6rem] text-blue-300 mb-1 font-mono">
-                                  <span>{task.progress.current} / {task.progress.target}</span>
-                                  <span className="opacity-70">{task.progress.unit}</span>
-                                </div>
-                                <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
-                                  <motion.div 
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${Math.min((task.progress.current / task.progress.target) * 100, 100)}%` }}
-                                    transition={{ type: "spring", stiffness: 100, damping: 20 }}
-                                    className="h-full bg-blue-500"
-                                  />
-                                </div>
-                              </motion.div>
-                          )}
-                      </div>
-                    )}
                   </motion.div>
                 </motion.div>
               );
@@ -348,20 +304,20 @@ export const TaskWidget: React.FC<TaskWidgetProps> = () => {
           
           {/* Completed State Message */}
           {tasks.length > 0 && activeIndex >= tasks.length && (
-             <motion.div 
-               initial={{ opacity: 0, scale: 0.9, y: 10 }}
-               animate={{ opacity: 1, scale: 1, y: 0 }}
-               className="absolute top-[60px] left-5 text-emerald-400 flex items-center gap-1.5"
-             >
-               <Check size={16} />
-               <span className="font-semibold text-xs">{t('ui.task_widget.all_completed')}</span>
-             </motion.div>
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                className="absolute top-[60px] left-5 text-emerald-400 flex items-center gap-1.5"
+              >
+                <Check size={16} />
+                <span className="font-semibold text-xs">{t('ui.task_widget.all_completed')}</span>
+              </motion.div>
           )}
 
            {tasks.length === 0 && (
-             <div className="absolute top-[60px] left-0 text-slate-600 italic text-xs pl-2">
-               {t('ui.task_widget.no_active_tasks')}
-             </div>
+              <div className="absolute top-[60px] left-0 text-slate-600 italic text-xs pl-2">
+                {t('ui.task_widget.no_active_tasks')}
+              </div>
           )}
         </div>
       </div>

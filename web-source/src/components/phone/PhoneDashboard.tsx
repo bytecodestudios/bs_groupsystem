@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, ChevronRight, CheckCircle2, Circle, Clock, Send, Sparkles, ShieldAlert, Briefcase } from 'lucide-react';
+import { Plus, ChevronRight, CheckCircle2, Circle, Clock, Send, Users, ShieldAlert, Briefcase } from 'lucide-react';
 import { Group } from '../../utils/types';
 import { useLocale } from '../../hooks/useLocale';
 import { Card, Row, Avatar, BigButton } from './ui';
@@ -52,14 +52,21 @@ export const PhoneDashboard: React.FC<Props> = ({
                     {/* Group hero card */}
                     <Card
                         onClick={() => onSelectGroup(myGroup)}
-                        className={`p-4 relative overflow-hidden ${myGroup.isIllegal ? '!border-red-500/25' : ''}`}
+                        className="p-4 relative overflow-hidden"
                     >
                         <div className="relative">
                             <div className="flex items-start justify-between">
                                 <div className="min-w-0">
-                                    <p className={`text-[12px] font-semibold uppercase tracking-wide ${myGroup.isIllegal ? 'text-red-400' : 'text-emerald-400'}`}>
-                                        {myGroup.isIllegal ? t('ui.dashboard.illegal_group') : t('ui.dashboard.my_group')}
-                                    </p>
+                                    {myGroup.isIllegal ? (
+                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-500/15 text-red-400 border border-red-500/20 mb-1">
+                                            <ShieldAlert className="w-3 h-3 text-red-400" />
+                                            {t('ui.dashboard.illegal_group')}
+                                        </span>
+                                    ) : (
+                                        <p className="text-[12px] font-semibold uppercase tracking-wide text-emerald-400">
+                                            {t('ui.dashboard.my_group')}
+                                        </p>
+                                    )}
                                     <h2 className="text-[22px] font-bold tracking-tight truncate mt-0.5">{myGroup.name}</h2>
                                     <p className="text-[13px] text-white/45">
                                         {myGroup.isLeader ? t('ui.group_card.you_are_leader') : t('ui.group_card.you_are_member')}
@@ -80,7 +87,7 @@ export const PhoneDashboard: React.FC<Props> = ({
                                 </div>
                                 <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
                                     <motion.div
-                                        className={`h-full rounded-full ${myGroup.isIllegal ? 'bg-red-400' : 'bg-emerald-400'}`}
+                                        className="h-full rounded-full bg-emerald-400"
                                         initial={{ width: 0 }}
                                         animate={{ width: `${(myGroup.members.length / myGroup.maxMembers) * 100}%` }}
                                         transition={{ duration: 0.7, ease: 'easeOut' }}
@@ -205,7 +212,7 @@ export const PhoneDashboard: React.FC<Props> = ({
                     <Card className="p-5 text-center relative overflow-hidden">
                         <div className="relative">
                             <div className="inline-flex p-3 rounded-2xl bg-emerald-500/15 mb-3">
-                                <Sparkles className="w-6 h-6 text-emerald-300" />
+                                <Users className="w-6 h-6 text-emerald-300" />
                             </div>
                             <h2 className="text-[20px] font-bold tracking-tight mb-1">{t('ui.dashboard.find_your_squad')}</h2>
                             <p className="text-[13px] text-white/50 leading-relaxed mb-5">{t('ui.dashboard.find_your_squad_desc')}</p>
@@ -231,15 +238,23 @@ export const PhoneDashboard: React.FC<Props> = ({
                             <Card className="overflow-hidden">
                                 {featured.map((g, i) => (
                                     <Row key={g.id} first={i === 0} onClick={onGoDiscover}>
-                                        <Avatar name={g.name} size={40} className={g.isIllegal ? '!from-red-500/30 !to-red-500/5' : ''} />
+                                        <Avatar name={g.name} size={40} />
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-[15px] font-semibold truncate flex items-center gap-1.5">
+                                            <p className="text-[15px] font-semibold truncate">
                                                 {g.name}
-                                                {g.isIllegal && <ShieldAlert className="w-3.5 h-3.5 text-red-400" />}
                                             </p>
-                                            <p className="text-[12px] text-white/40">
-                                                {t('ui.group_card.members_format', String(g.members.length), String(g.maxMembers))}
-                                            </p>
+                                            <div className="flex items-center gap-1.5 text-[12px] text-white/40 mt-0.5">
+                                                <span>{t('ui.group_card.members_format', String(g.members.length), String(g.maxMembers))}</span>
+                                                {g.isIllegal && (
+                                                    <>
+                                                        <span className="w-1 h-1 rounded-full bg-white/20" />
+                                                        <span className="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase tracking-wider bg-red-500/15 text-red-400 border border-red-500/20 flex items-center gap-0.5">
+                                                            <ShieldAlert className="w-2.5 h-2.5 text-red-400" />
+                                                            Illegal
+                                                        </span>
+                                                    </>
+                                                )}
+                                            </div>
                                         </div>
                                         <ChevronRight className="w-5 h-5 text-white/25" />
                                     </Row>

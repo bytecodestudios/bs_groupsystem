@@ -85,13 +85,13 @@
       "you_are_member": "You are a member",
       "members": "Members",
       "view_details": "View Details →",
-      "already_in_group": "Already in Group",
-      "group_is_full": "Group is Full",
-      "request_sent": "Request Sent",
+      "already_in_group": "In Party",
+      "group_is_full": "Full",
+      "request_sent": "Sent",
       "closed": "Closed",
       "invite_only": "Invite Only",
-      "not_recruiting": "Not Recruiting",
-      "request_to_join": "Request to Join",
+      "not_recruiting": "Closed",
+      "request_to_join": "Request",
       "members_format": "%s / %s members"
     },
     "group_tabs": {

@@ -98,17 +98,30 @@ export const PhoneCreateSheet: React.FC<{
 
                 {/* Illegal toggle */}
                 {isVpnConnected && (
-                    <div className="flex items-center justify-between p-3.5 rounded-2xl border border-red-500/25 bg-red-500/[0.06]">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-xl bg-red-500/15">
-                                <ShieldAlert className="w-5 h-5 text-red-400" />
+                    <div
+                        onClick={() => setIsIllegal((v) => !v)}
+                        className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer ${
+                            isIllegal
+                                ? 'border-red-500/30 bg-red-500/[0.08]'
+                                : 'border-white/[0.08] bg-white/[0.04]'
+                        }`}
+                    >
+                        <div className="flex items-center gap-3 min-w-0 pr-2">
+                            <div className={`p-2.5 rounded-xl transition-colors flex-shrink-0 ${isIllegal ? 'bg-red-500/20 text-red-400' : 'bg-white/[0.06] text-white/40'}`}>
+                                <ShieldAlert className="w-5 h-5" />
                             </div>
-                            <div>
-                                <p className="text-[14px] font-bold text-red-400">{t('ui.modals.illegal_network')}</p>
-                                <p className="text-[11px] text-red-400/60">{t('ui.modals.illegal_network_desc')}</p>
+                            <div className="min-w-0">
+                                <p className={`text-[14px] font-semibold transition-colors truncate ${isIllegal ? 'text-red-400' : 'text-white'}`}>
+                                    {t('ui.modals.illegal_network')}
+                                </p>
+                                <p className="text-[12px] text-white/40 mt-0.5 truncate">
+                                    {t('ui.modals.illegal_network_desc')}
+                                </p>
                             </div>
                         </div>
-                        <Switch checked={isIllegal} onChange={() => setIsIllegal((v) => !v)} />
+                        <div className="flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                            <Switch checked={isIllegal} onChange={() => setIsIllegal((v) => !v)} activeClass="bg-red-500" />
+                        </div>
                     </div>
                 )}
 

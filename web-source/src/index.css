@@ -9,14 +9,27 @@ body {
     margin: 0;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* Use 100% (fill the host container) rather than 100vw/100vh. Inside a phone
-       host (lb-phone / sd-phone) the app frame is smaller than the game viewport,
-       so viewport units would render the app wider/taller than the phone screen
-       and clip it. 100% respects whatever size the host gives us. */
     height: 100%;
     width: 100%;
     overflow: hidden;
     font-family: Roboto, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent;
+}
+
+*:focus,
+*:focus-visible,
+*:focus-within,
+button:focus,
+button:focus-visible,
+input:focus,
+input:focus-visible {
+    outline: none !important;
 }
 
 #root {

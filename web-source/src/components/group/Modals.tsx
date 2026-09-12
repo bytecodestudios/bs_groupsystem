@@ -84,20 +84,37 @@ export const CreateGroupModal: React.FC<{ onClose: () => void, onCreate: (data: 
                                     {/* Illegal Group Toggle - Only visible if VPN is connected */}
                                     {isVpnConnected && (
                                         <div className="space-y-2 pt-2 border-t border-border">
-                                            <label className="flex items-center justify-between cursor-pointer p-3 rounded-lg border border-red-500/30 bg-red-500/5 hover:bg-red-500/10 transition-colors">
+                                            <div
+                                                onClick={() => setIsIllegal(!isIllegal)}
+                                                className={`flex items-center justify-between p-3 rounded-xl border transition-colors cursor-pointer ${
+                                                    isIllegal
+                                                        ? 'border-red-500/40 bg-red-500/10'
+                                                        : 'border-border bg-secondary/30 hover:bg-secondary/50'
+                                                }`}
+                                            >
                                                 <div className="flex items-center space-x-3">
-                                                    <div className="bg-red-500/20 p-2 rounded-lg">
-                                                        <ShieldAlert className="w-5 h-5 text-red-500" />
+                                                    <div className={`p-2 rounded-lg transition-colors ${isIllegal ? 'bg-red-500/20 text-red-400' : 'bg-muted text-muted-foreground'}`}>
+                                                        <ShieldAlert className="w-5 h-5" />
                                                     </div>
                                                     <div>
-                                                        <p className="font-bold text-red-500 text-sm">{t('ui.modals.illegal_network')}</p>
-                                                        <p className="text-[10px] text-red-400/70">{t('ui.modals.illegal_network_desc')}</p>
+                                                        <p className={`font-semibold text-sm transition-colors ${isIllegal ? 'text-red-400' : 'text-foreground'}`}>
+                                                            {t('ui.modals.illegal_network')}
+                                                        </p>
+                                                        <p className="text-[11px] text-muted-foreground">
+                                                            {t('ui.modals.illegal_network_desc')}
+                                                        </p>
                                                     </div>
                                                 </div>
-                                                <div className={`w-10 h-5 rounded-full relative transition-colors ${isIllegal ? 'bg-red-500' : 'bg-secondary border border-border'}`} onClick={() => setIsIllegal(!isIllegal)}>
-                                                    <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${isIllegal ? 'left-5' : 'left-0.5'}`} />
+                                                <div
+                                                    className={`w-10 h-5 rounded-full relative transition-colors duration-200 ${isIllegal ? 'bg-red-500' : 'bg-secondary border border-border'}`}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setIsIllegal(!isIllegal);
+                                                    }}
+                                                >
+                                                    <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform duration-200 ${isIllegal ? 'left-5' : 'left-0.5'}`} />
                                                 </div>
-                                            </label>
+                                            </div>
                                         </div>
                                     )}
 

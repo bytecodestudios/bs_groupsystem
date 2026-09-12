@@ -16,10 +16,11 @@ export const NUI_MOCKS: Record<string, any> = {
           ],
           maxMembers: 6,
           joinType: "Open",
-          currentJob: false,
+          currentJob: "Vehicle Theft",
           partyTasks: [
-            { name: "Steal 3 cars", status: "pending" },
-            { name: "Deliver package", status: "done" }
+            { name: "Scout the Location", status: "done", type: "checkbox" },
+            { name: "Steal 3 cars", status: "current", type: "numerical-progress", progress: { current: 1, target: 3, unit: "cars" } },
+            { name: "Deliver package", status: "pending", type: "checkbox" }
           ],
           requests: [
             { id: "CITIZEN_789", name: "Bob Builder" }
@@ -35,7 +36,11 @@ export const NUI_MOCKS: Record<string, any> = {
           maxMembers: 4,
           joinType: "Request to Join",
           currentJob: true,
-          partyTasks: [],
+          partyTasks: [
+            { name: "Collect Trash Bags", status: "done", type: "checkbox" },
+            { name: "Clean Sector 4", status: "current", type: "numerical", progress: { current: 5, target: 10, unit: "bags" } },
+            { name: "Return Trash Truck", status: "pending", type: "checkbox" }
+          ],
           requests: [],
           partyType: "legal"
         }

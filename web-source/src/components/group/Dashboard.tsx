@@ -46,8 +46,8 @@ export const DashboardView: React.FC<{
                         <div className="lg:col-span-2 space-y-6">
                             <header className="flex justify-between items-center">
                                 <h2 className="text-xl font-bold text-foreground flex items-center">
-                                    <Shield className={`w-6 h-6 mr-3 ${myGroup.isIllegal ? 'text-red-500' : 'text-emerald-400'}`} /> 
-                                    {myGroup.isIllegal ? <span className="text-red-500">{t('ui.dashboard.illegal_group')}</span> : t('ui.dashboard.my_group')}
+                                    <Shield className="w-6 h-6 mr-3 text-emerald-400" /> 
+                                    {myGroup.isIllegal ? t('ui.dashboard.illegal_group') : t('ui.dashboard.my_group')}
                                 </h2>
                             </header>
                             <MyGroupCard group={myGroup} onSelectGroup={onSelectGroup} />

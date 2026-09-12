@@ -28,13 +28,17 @@ end)
 
 RegisterNUICallback('bsgroup:nui:checkVpnAccess', function(_, cb)
     local hasAccess = CanSeeIllegalParties()
-    if vpnConnected and not hasAccess then vpnConnected = false end
+    if vpnConnected and not hasAccess then
+        vpnConnected = false
+        TriggerServerEvent('bs_groupsystem:server:disbandIllegalPartyOnVpnDisconnect')
+    end
     cb({ hasAccess = hasAccess, isConnected = vpnConnected })
 end)
 
 RegisterNUICallback('bsgroup:nui:toggleVpn', function(data, cb)
     if not data.connect then
         vpnConnected = false
+        TriggerServerEvent('bs_groupsystem:server:disbandIllegalPartyOnVpnDisconnect')
         return cb({ success = true, connected = false })
     end
 
@@ -43,6 +47,7 @@ RegisterNUICallback('bsgroup:nui:toggleVpn', function(data, cb)
         cb({ success = true, connected = true })
     else
         vpnConnected = false
+        TriggerServerEvent('bs_groupsystem:server:disbandIllegalPartyOnVpnDisconnect')
         cb({ success = false, connected = false, msg = 'No VPN hardware detected' })
     end
 end)
