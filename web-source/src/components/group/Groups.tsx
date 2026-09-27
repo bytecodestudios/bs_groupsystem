@@ -171,7 +171,7 @@ const Groups = () => {
                         {/* Tab Navigation — full-width segmented control on phone,
                             centered auto-width pill on laptop (sm+). */}
                         <div className="flex-shrink-0 flex justify-center mb-4 sm:mb-6">
-                            <div className="flex w-full sm:w-auto p-1 bg-secondary/30 backdrop-blur-md rounded-xl border border-border/50">
+                            <div className="flex w-full sm:w-auto p-1 bg-secondary/60 rounded-xl border border-border/50">
                                 {tabs.map((tab) => (
                                     <button
                                         key={tab.id}

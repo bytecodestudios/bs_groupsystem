@@ -26,7 +26,7 @@ export const NavBar: React.FC<{
         {onBack && (
             <button
                 onClick={onBack}
-                className="flex items-center -ml-1 mb-3 text-[15px] font-medium text-emerald-400 active:opacity-60 transition-opacity"
+                className="flex items-center -ml-1 mb-3 text-[15px] font-medium text-emerald-400 hover:text-emerald-300 active:opacity-60 transition-colors"
             >
                 <ChevronLeft className="w-5 h-5 -ml-1" />
                 <span>{backLabel ?? 'Back'}</span>
@@ -34,15 +34,15 @@ export const NavBar: React.FC<{
         )}
         <div className="flex items-end justify-between gap-3">
             <div className="min-w-0">
-                <h1 className="text-[26px] leading-tight font-bold tracking-tight text-white truncate">{title}</h1>
-                {subtitle && <p className="text-[13px] text-white/45 mt-0.5 truncate">{subtitle}</p>}
+                <h1 className="text-[26px] leading-tight font-bold tracking-tight text-foreground truncate">{title}</h1>
+                {subtitle && <p className="text-[13px] text-muted-foreground mt-0.5 truncate">{subtitle}</p>}
             </div>
             {trailing && <div className="flex-shrink-0 pb-1.5">{trailing}</div>}
         </div>
     </div>
 );
 
-// Inset "grouped table" container, the classic iOS Settings list surface.
+// Inset "grouped table" container, styled according to the laptop theme surfaces.
 export const Card: React.FC<{ className?: string; children: React.ReactNode; onClick?: () => void }> = ({
     className = '',
     children,
@@ -50,8 +50,8 @@ export const Card: React.FC<{ className?: string; children: React.ReactNode; onC
 }) => (
     <div
         onClick={onClick}
-        className={`rounded-[18px] bg-white/[0.05] border border-white/[0.07] ${
-            onClick ? 'active:scale-[0.985] transition-transform cursor-pointer' : ''
+        className={`rounded-[18px] bg-secondary/35 border border-border/60 ${
+            onClick ? 'active:scale-[0.985] active:border-emerald-500/40 transition-all cursor-pointer' : ''
         } ${className}`}
     >
         {children}
@@ -67,8 +67,8 @@ export const Row: React.FC<{
 }> = ({ children, className = '', onClick, first }) => (
     <div
         onClick={onClick}
-        className={`flex items-center gap-3 px-4 py-3 ${!first ? 'border-t border-white/[0.06]' : ''} ${
-            onClick ? 'active:bg-white/[0.04] transition-colors cursor-pointer' : ''
+        className={`flex items-center gap-3 px-4 py-3 ${!first ? 'border-t border-border/40' : ''} ${
+            onClick ? 'active:bg-secondary/40 transition-colors cursor-pointer' : ''
         } ${className}`}
     >
         {children}
@@ -84,15 +84,15 @@ export const Avatar: React.FC<{
 }> = ({ name, size = 40, online, className = '' }) => (
     <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
         <div
-            className={`w-full h-full rounded-full flex items-center justify-center font-semibold text-white bg-gradient-to-br from-white/25 to-white/5 border border-white/10 ${className}`}
+            className={`w-full h-full rounded-full flex items-center justify-center font-bold text-foreground bg-muted border border-border ${className}`}
             style={{ fontSize: size * 0.4 }}
         >
             {name.charAt(0).toUpperCase()}
         </div>
         {online !== undefined && (
             <span
-                className={`absolute bottom-0 right-0 block rounded-full border-2 border-[#0a0e14] ${
-                    online ? 'bg-emerald-400' : 'bg-white/25'
+                className={`absolute bottom-0 right-0 block rounded-full border-2 border-card ${
+                    online ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.7)]' : 'bg-muted-foreground/40'
                 }`}
                 style={{ width: size * 0.3, height: size * 0.3 }}
             />
@@ -100,7 +100,7 @@ export const Avatar: React.FC<{
     </div>
 );
 
-// Pill segmented control (iOS style).
+// Pill segmented control matching laptop theme's secondary tabs.
 export function Segmented<T extends string>({
     options,
     value,
@@ -111,19 +111,19 @@ export function Segmented<T extends string>({
     onChange: (v: T) => void;
 }) {
     return (
-        <div className="flex items-center gap-0.5 p-1 rounded-full bg-white/[0.06] border border-white/[0.06]">
+        <div className="flex items-center gap-0.5 p-1 rounded-full bg-secondary/40 border border-border/50">
             {options.map((opt) => (
                 <button
                     key={opt.id}
                     onClick={() => onChange(opt.id)}
                     className={`relative flex-1 h-8 flex items-center justify-center px-2 text-[13px] font-semibold leading-none rounded-full whitespace-nowrap transition-colors ${
-                        value === opt.id ? 'text-black' : 'text-white/50'
+                        value === opt.id ? 'text-foreground font-bold' : 'text-muted-foreground hover:text-foreground'
                     }`}
                 >
                     {value === opt.id && (
                         <motion.div
                             layoutId="ios-segment"
-                            className="absolute inset-0 bg-white rounded-full"
+                            className="absolute inset-0 bg-secondary rounded-full border border-border/60 shadow-sm"
                             transition={springSoft}
                         />
                     )}
@@ -134,7 +134,7 @@ export function Segmented<T extends string>({
     );
 }
 
-// iOS toggle switch.
+// iOS toggle switch aligned with laptop colors.
 export const Switch: React.FC<{ checked: boolean; onChange: () => void; disabled?: boolean; activeClass?: string }> = ({
     checked,
     onChange,
@@ -145,7 +145,7 @@ export const Switch: React.FC<{ checked: boolean; onChange: () => void; disabled
         onClick={disabled ? undefined : onChange}
         disabled={disabled}
         className={`w-[51px] h-[31px] rounded-full p-0.5 flex-shrink-0 transition-colors duration-300 ${
-            checked ? activeClass : 'bg-white/15'
+            checked ? activeClass : 'bg-muted border border-border/50'
         } ${disabled ? 'opacity-40' : ''}`}
     >
         <motion.div
@@ -156,7 +156,7 @@ export const Switch: React.FC<{ checked: boolean; onChange: () => void; disabled
     </button>
 );
 
-// Full-height primary action button.
+// Full-height primary action button matching laptop UI emerald gradients.
 export const BigButton: React.FC<{
     children: React.ReactNode;
     onClick?: () => void;
@@ -166,9 +166,9 @@ export const BigButton: React.FC<{
     type?: 'button' | 'submit';
 }> = ({ children, onClick, disabled, variant = 'primary', className = '', type = 'button' }) => {
     const styles: Record<string, string> = {
-        primary: 'bg-emerald-500 text-black active:bg-emerald-400',
-        neutral: 'bg-white/[0.08] text-white active:bg-white/[0.14]',
-        danger: 'bg-red-500 text-white active:bg-red-400',
+        primary: 'bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-bold shadow-lg shadow-emerald-500/20 active:opacity-90',
+        neutral: 'bg-secondary hover:bg-muted text-foreground border border-border active:bg-secondary/70 font-semibold',
+        danger: 'bg-red-600 hover:bg-red-500 text-white font-bold shadow-lg shadow-red-500/20 active:bg-red-700',
     };
     return (
         <button
@@ -182,14 +182,14 @@ export const BigButton: React.FC<{
     );
 };
 
-// Bottom sheet that slides up from the bottom, iOS modal-card style.
+// Bottom sheet styled to match the dark phone theme.
 export const Sheet: React.FC<{ children: React.ReactNode; onClose: () => void }> = ({ children, onClose }) => (
     <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="absolute inset-0 z-50 flex items-end justify-center bg-black/60"
+        className="absolute inset-0 z-50 flex items-end justify-center bg-black/70"
     >
         <motion.div
             initial={{ y: '100%' }}
@@ -197,10 +197,11 @@ export const Sheet: React.FC<{ children: React.ReactNode; onClose: () => void }>
             exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 420, damping: 40 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-h-[92%] flex flex-col rounded-t-[28px] bg-[#12161d] border-t border-white/10 overflow-hidden"
+            className="w-full max-h-[92%] flex flex-col rounded-t-[28px] bg-background border-t border-border/80 shadow-2xl overflow-hidden relative"
         >
-            <div className="flex-shrink-0 flex justify-center pt-2.5 pb-1">
-                <div className="w-9 h-1 rounded-full bg-white/20" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-8 bg-emerald-500/10 blur-xl pointer-events-none" />
+            <div className="flex-shrink-0 flex justify-center pt-2.5 pb-1 relative z-10">
+                <div className="w-9 h-1 rounded-full bg-muted-foreground/30" />
             </div>
             {children}
         </motion.div>

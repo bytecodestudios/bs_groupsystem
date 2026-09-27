@@ -58,17 +58,17 @@ export const PhoneDashboard: React.FC<Props> = ({
 
     return (
         <div className="h-full overflow-y-auto no-scrollbar">
-            {/* Large iOS title */}
+            {/* Header title */}
             <div className="px-5 pt-3 pb-1">
-                <h1 className="text-[27px] leading-none font-bold tracking-tight">{t('ui.groups.tab_dashboard')}</h1>
+                <h1 className="text-[27px] leading-none font-bold tracking-tight text-foreground">{t('ui.groups.tab_dashboard')}</h1>
             </div>
 
             {myGroup ? (
                 <div className="px-4 pb-6 space-y-4">
-                    {/* Group hero card */}
+                    {/* Group hero card matching laptop MyGroupCard */}
                     <Card
                         onClick={() => onSelectGroup(myGroup)}
-                        className="p-4 relative overflow-hidden"
+                        className="p-4 relative overflow-hidden group hover:border-emerald-400/50 transition-colors"
                     >
                         <div className="relative">
                             <div className="flex items-start justify-between">
@@ -83,12 +83,12 @@ export const PhoneDashboard: React.FC<Props> = ({
                                             {t('ui.dashboard.my_group')}
                                         </p>
                                     )}
-                                    <h2 className="text-[22px] font-bold tracking-tight truncate mt-0.5">{myGroup.name}</h2>
-                                    <p className="text-[13px] text-white/45">
+                                    <h2 className="text-[22px] font-bold tracking-tight truncate mt-0.5 text-foreground group-hover:text-emerald-300 transition-colors">{myGroup.name}</h2>
+                                    <p className="text-[13px] text-muted-foreground">
                                         {myGroup.isLeader ? t('ui.group_card.you_are_leader') : t('ui.group_card.you_are_member')}
                                     </p>
                                 </div>
-                                <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-400/15 text-emerald-300">
+                                <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-green-500/20 text-green-300">
                                     {myGroup.status}
                                 </span>
                             </div>
@@ -96,14 +96,14 @@ export const PhoneDashboard: React.FC<Props> = ({
                             {/* Member progress */}
                             <div className="mt-4">
                                 <div className="flex justify-between text-[12px] mb-1.5">
-                                    <span className="text-white/45">{t('ui.group_card.members')}</span>
-                                    <span className="font-semibold">
+                                    <span className="text-muted-foreground">{t('ui.group_card.members')}</span>
+                                    <span className="font-semibold text-foreground">
                                         {myGroup.members.length} / {myGroup.maxMembers}
                                     </span>
                                 </div>
-                                <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+                                <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                                     <motion.div
-                                        className="h-full rounded-full bg-emerald-400"
+                                        className="h-full rounded-full bg-emerald-500"
                                         initial={{ width: 0 }}
                                         animate={{ width: `${(myGroup.members.length / myGroup.maxMembers) * 100}%` }}
                                         transition={{ duration: 0.7, ease: 'easeOut' }}
@@ -114,16 +114,16 @@ export const PhoneDashboard: React.FC<Props> = ({
                             <div className="mt-4 flex items-center justify-between">
                                 <div className="flex -space-x-2.5">
                                     {myGroup.members.slice(0, 5).map((m) => (
-                                        <Avatar key={m.id} name={m.name} size={30} className="!border-2 !border-[#11151c]" />
+                                        <Avatar key={m.id} name={m.name} size={30} className="!border-2 !border-secondary" />
                                     ))}
                                     {myGroup.members.length > 5 && (
-                                        <div className="w-[30px] h-[30px] rounded-full bg-white/10 border-2 border-[#11151c] flex items-center justify-center text-[11px] font-bold">
+                                        <div className="w-[30px] h-[30px] rounded-full bg-card border-2 border-secondary flex items-center justify-center text-[11px] font-bold text-foreground">
                                             +{myGroup.members.length - 5}
                                         </div>
                                     )}
                                 </div>
-                                <span className="flex items-center text-[14px] font-semibold text-white/60">
-                                    {t('ui.group_card.view_details')} <ChevronRight className="w-4 h-4" />
+                                <span className="flex items-center text-[14px] font-semibold text-muted-foreground group-hover:text-emerald-300 transition-colors">
+                                    {t('ui.group_card.view_details')} <ChevronRight className="w-4 h-4 ml-0.5" />
                                 </span>
                             </div>
                         </div>
@@ -131,9 +131,14 @@ export const PhoneDashboard: React.FC<Props> = ({
 
                     {/* Missions */}
                     <div>
-                        <p className="px-2 mb-2 text-[13px] font-semibold text-white/40 uppercase tracking-wide">
-                            {t('ui.dashboard.active_missions')}
-                        </p>
+                        <div className="flex justify-between items-center px-1 mb-2">
+                            <p className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wide">
+                                {t('ui.dashboard.active_missions')}
+                            </p>
+                            <span className="text-[11px] font-semibold text-blue-300 bg-blue-500/10 px-2 py-0.5 rounded-full">
+                                {myGroup.partyTasks.filter((tk) => tk.completed).length}/{myGroup.partyTasks.length}
+                            </span>
+                        </div>
                         <Card className="overflow-hidden">
                             {myGroup.partyTasks.length > 0 ? (
                                 myGroup.partyTasks.slice(0, 4).map((task, i) => (
@@ -141,16 +146,16 @@ export const PhoneDashboard: React.FC<Props> = ({
                                         {task.completed ? (
                                             <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
                                         ) : (
-                                            <Circle className="w-5 h-5 text-white/25 flex-shrink-0" />
+                                            <div className="w-4 h-4 rounded-full border-2 border-muted-foreground shrink-0" />
                                         )}
-                                        <span className={`text-[15px] truncate ${task.completed ? 'line-through text-white/35' : ''}`}>
+                                        <span className={`text-[15px] truncate ${task.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
                                             {task.title}
                                         </span>
                                     </Row>
                                 ))
                             ) : (
                                 <Row first>
-                                    <span className="text-[15px] text-white/40">{t('ui.dashboard.no_active_missions')}</span>
+                                    <span className="text-[15px] text-muted-foreground italic">{t('ui.dashboard.no_active_missions')}</span>
                                 </Row>
                             )}
                         </Card>
@@ -159,17 +164,17 @@ export const PhoneDashboard: React.FC<Props> = ({
                     {/* Job offer (leader only) */}
                     {myGroup.isLeader && myGroup.jobOffer && (
                         <div>
-                            <p className="px-2 mb-2 text-[13px] font-semibold text-white/40 uppercase tracking-wide flex items-center gap-1.5">
+                            <p className="px-2 mb-2 text-[13px] font-semibold text-emerald-300 uppercase tracking-wide flex items-center gap-1.5">
                                 <Briefcase className="w-3.5 h-3.5" /> {t('ui.joboffer.section')}
                             </p>
-                            <Card className="p-4 !border-emerald-500/25">
+                            <Card className="p-4 bg-emerald-500/5 !border-emerald-500/25">
                                 <div className="flex items-start gap-3">
-                                    <div className="w-[38px] h-[38px] rounded-full bg-emerald-400/15 flex items-center justify-center flex-shrink-0">
+                                    <div className="w-[38px] h-[38px] rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
                                         <Briefcase className="w-[18px] h-[18px] text-emerald-300" />
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="text-[15px] font-semibold truncate">{myGroup.jobOffer.title}</p>
-                                        <p className="text-[13px] text-white/50 leading-snug mt-0.5">{myGroup.jobOffer.description}</p>
+                                        <p className="text-[15px] font-semibold text-foreground truncate">{myGroup.jobOffer.title}</p>
+                                        <p className="text-[13px] text-muted-foreground leading-snug mt-0.5">{myGroup.jobOffer.description}</p>
                                     </div>
                                 </div>
                                 <div className="flex gap-2.5 mt-4">
@@ -187,8 +192,8 @@ export const PhoneDashboard: React.FC<Props> = ({
                     {/* Pending */}
                     {(myGroup.isLeader || outgoing.length > 0) && (
                         <div>
-                            <p className="px-2 mb-2 text-[13px] font-semibold text-white/40 uppercase tracking-wide flex items-center gap-1.5">
-                                <Clock className="w-3.5 h-3.5" /> {t('ui.dashboard.pending_actions')}
+                            <p className="px-2 mb-2 text-[13px] font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+                                <Clock className="w-3.5 h-3.5 text-amber-400" /> {t('ui.dashboard.pending_actions')}
                             </p>
                             <Card className="overflow-hidden">
                                 {myGroup.isLeader && incoming.length > 0 &&
@@ -196,7 +201,7 @@ export const PhoneDashboard: React.FC<Props> = ({
                                         <Row key={req.id} first={i === 0}>
                                             <Avatar name={req.name} size={34} />
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-[15px] font-medium truncate">{req.name}</p>
+                                                <p className="text-[15px] font-medium text-foreground truncate">{req.name}</p>
                                                 <p className="text-[12px] text-amber-400">{t('ui.dashboard.join_requests')}</p>
                                             </div>
                                             <div className="flex items-center gap-2 flex-shrink-0">
@@ -204,7 +209,7 @@ export const PhoneDashboard: React.FC<Props> = ({
                                                     aria-label={t('ui.group_tabs.decline')}
                                                     onClick={() => resolveRequest(req.id, 'decline', req.name)}
                                                     disabled={busyRequest !== null}
-                                                    className="w-[34px] h-[34px] rounded-full bg-red-500/15 text-red-300 flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
+                                                    className="w-[34px] h-[34px] rounded-full bg-red-500/15 text-red-300 hover:bg-red-500/25 flex items-center justify-center active:scale-95 transition-all disabled:opacity-40"
                                                 >
                                                     <UserX className="w-[17px] h-[17px]" />
                                                 </button>
@@ -212,7 +217,7 @@ export const PhoneDashboard: React.FC<Props> = ({
                                                     aria-label={t('ui.group_tabs.accept')}
                                                     onClick={() => resolveRequest(req.id, 'accept', req.name)}
                                                     disabled={busyRequest !== null || isFull}
-                                                    className="w-[34px] h-[34px] rounded-full bg-emerald-500 text-black flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
+                                                    className="w-[34px] h-[34px] rounded-full bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center active:scale-95 transition-all disabled:opacity-40"
                                                 >
                                                     <UserCheck className="w-[17px] h-[17px]" />
                                                 </button>
@@ -221,18 +226,18 @@ export const PhoneDashboard: React.FC<Props> = ({
                                     ))}
                                 {outgoing.map((g, i) => (
                                     <Row key={g.id} first={i === 0 && !(myGroup.isLeader && incoming.length > 0)}>
-                                        <div className="w-[34px] h-[34px] rounded-full bg-sky-400/15 flex items-center justify-center flex-shrink-0">
-                                            <Send className="w-4 h-4 text-sky-300" />
+                                        <div className="w-[34px] h-[34px] rounded-full bg-blue-500/20 text-blue-300 flex items-center justify-center flex-shrink-0 border border-blue-500/30">
+                                            <Send className="w-4 h-4 text-blue-300" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-[15px] font-medium truncate">{g.name}</p>
-                                            <p className="text-[12px] text-white/40">{t('ui.dashboard.application_sent')}</p>
+                                            <p className="text-[15px] font-medium text-foreground truncate">{g.name}</p>
+                                            <p className="text-[12px] text-muted-foreground">{t('ui.dashboard.application_sent')}</p>
                                         </div>
                                     </Row>
                                 ))}
                                 {myGroup.isLeader && incoming.length === 0 && outgoing.length === 0 && (
                                     <Row first>
-                                        <span className="text-[15px] text-white/40">{t('ui.dashboard.no_new_recruits')}</span>
+                                        <span className="text-[15px] text-muted-foreground italic">{t('ui.dashboard.no_new_recruits')}</span>
                                     </Row>
                                 )}
                             </Card>
@@ -240,20 +245,21 @@ export const PhoneDashboard: React.FC<Props> = ({
                     )}
                 </div>
             ) : (
-                <div className="px-4 pb-6 space-y-4 min-h-full flex flex-col justify-center -mt-10">
-                    {/* Empty hero */}
-                    <Card className="p-5 text-center relative overflow-hidden">
-                        <div className="relative">
-                            <div className="inline-flex p-3 rounded-2xl bg-emerald-500/15 mb-3">
-                                <Users className="w-6 h-6 text-emerald-300" />
+                <div className="px-4 pb-6 space-y-4 min-h-full flex flex-col justify-center -mt-6">
+                    <Card className="p-6 text-center space-y-4">
+                        <div>
+                            <div className="inline-flex p-3 bg-emerald-500/10 rounded-full mb-3 text-emerald-400">
+                                <Users className="w-7 h-7" />
                             </div>
-                            <h2 className="text-[20px] font-bold tracking-tight mb-1">{t('ui.dashboard.find_your_squad')}</h2>
-                            <p className="text-[13px] text-white/50 leading-relaxed mb-5">{t('ui.dashboard.find_your_squad_desc')}</p>
-                            <BigButton onClick={onOpenCreate}>
-                                <span className="flex items-center justify-center gap-2">
-                                    <Plus className="w-5 h-5" /> {t('ui.dashboard.create_new_group')}
-                                </span>
-                            </BigButton>
+                            <h2 className="text-[20px] font-bold text-white tracking-tight mb-1">{t('ui.dashboard.find_your_squad')}</h2>
+                            <p className="text-[13px] text-gray-300 leading-relaxed mb-5">{t('ui.dashboard.find_your_squad_desc')}</p>
+                            <button
+                                onClick={onOpenCreate}
+                                className="w-full py-3 bg-white text-emerald-950 rounded-xl font-bold shadow-md hover:bg-gray-100 transition-all active:scale-95 flex items-center justify-center gap-2"
+                            >
+                                <Plus className="w-5 h-5 text-emerald-900" />
+                                <span>{t('ui.dashboard.create_new_group')}</span>
+                            </button>
                         </div>
                     </Card>
 
@@ -261,10 +267,10 @@ export const PhoneDashboard: React.FC<Props> = ({
                     {featured.length > 0 && (
                         <div>
                             <div className="px-2 mb-2 flex items-center justify-between">
-                                <p className="text-[13px] font-semibold text-white/40 uppercase tracking-wide">
+                                <p className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wide">
                                     {t('ui.dashboard.trending_squads')}
                                 </p>
-                                <button onClick={onGoDiscover} className="text-[13px] font-semibold text-emerald-400 active:opacity-60">
+                                <button onClick={onGoDiscover} className="text-[13px] font-semibold text-emerald-400 hover:text-emerald-300 active:opacity-60 transition-colors">
                                     {t('ui.dashboard.discover_groups')}
                                 </button>
                             </div>
@@ -273,14 +279,14 @@ export const PhoneDashboard: React.FC<Props> = ({
                                     <Row key={g.id} first={i === 0} onClick={onGoDiscover}>
                                         <Avatar name={g.name} size={40} />
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-[15px] font-semibold truncate">
+                                            <p className="text-[15px] font-semibold text-foreground truncate">
                                                 {g.name}
                                             </p>
-                                            <div className="flex items-center gap-1.5 text-[12px] text-white/40 mt-0.5">
+                                            <div className="flex items-center gap-1.5 text-[12px] text-muted-foreground mt-0.5">
                                                 <span>{t('ui.group_card.members_format', String(g.members.length), String(g.maxMembers))}</span>
                                                 {g.isIllegal && (
                                                     <>
-                                                        <span className="w-1 h-1 rounded-full bg-white/20" />
+                                                        <span className="w-1 h-1 rounded-full bg-border" />
                                                         <span className="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase tracking-wider bg-red-500/15 text-red-400 border border-red-500/20 flex items-center gap-0.5">
                                                             <ShieldAlert className="w-2.5 h-2.5 text-red-400" />
                                                             Illegal
@@ -289,7 +295,7 @@ export const PhoneDashboard: React.FC<Props> = ({
                                                 )}
                                             </div>
                                         </div>
-                                        <ChevronRight className="w-5 h-5 text-white/25" />
+                                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
                                     </Row>
                                 ))}
                             </Card>

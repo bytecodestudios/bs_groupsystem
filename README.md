@@ -30,7 +30,7 @@ automatically based on what your server is running.
 - Register jobs that groups can take on, with an optional limit on how many
   groups may run the same job at once.
 - Jobs can be marked legal or illegal.
-- Illegal jobs require every member to hold the gating item (`shadowmod` by
+- Illegal jobs require every member to hold the gating item (`vpn` by
   default, configurable in `bridge/inventory/`).
 - `sendJob` offers a job to the leader, who accepts or declines it from the UI.
 
@@ -61,8 +61,45 @@ names, so scripts written for either keep working without edits.
 
 1. Place the `bs_groupsystem` folder inside your server's `resources` folder.
 2. Make sure `ox_lib` is installed and starts before this resource.
-3. Open `config.lua` and adjust the settings to your liking.
-4. Add `ensure bs_groupsystem` to your server config file.
+3. Ensure the gating item (`vpn`) exists in your inventory system (see [Items](#items) below).
+4. Open `config.lua` and adjust the settings to your liking.
+5. Add `ensure bs_groupsystem` to your server config file.
+
+## Items
+
+`bs_groupsystem` uses a gating item (`vpn` by default) to control visibility and access to illegal parties and illegal jobs. The server automatically checks that leaders of illegal groups hold this item.
+
+### ox_inventory (`data/items.lua`)
+```lua
+['vpn'] = {
+    label = 'VPN Module',
+    weight = 100,
+    stack = false,
+    close = true,
+    description = 'Encrypted network module allowing access to hidden and illegal group operations.',
+    client = {
+        image = 'vpn.png',
+    }
+},
+```
+
+### qb-core / qbx_core (`shared/items.lua`)
+```lua
+['vpn'] = {
+    name = 'vpn',
+    label = 'VPN Module',
+    weight = 100,
+    type = 'item',
+    image = 'vpn.png',
+    unique = false,
+    useable = false,
+    shouldClose = true,
+    combinable = nil,
+    description = 'Encrypted network module allowing access to hidden and illegal group operations.'
+},
+```
+
+To use a different item (e.g. `shadowmod` or `crypto_stick`), customize `bridge/inventory/client.lua` and `bridge/inventory/server.lua`.
 
 ## Configuration
 

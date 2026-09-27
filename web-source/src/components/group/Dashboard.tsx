@@ -206,11 +206,10 @@ export const DashboardView: React.FC<{
              ) : (
                  <div className="flex flex-col h-full">
                      {/* Hero Section */}
-                     <div className="relative bg-gradient-to-br from-emerald-900/40 to-green-900/20 rounded-2xl border border-emerald-500/30 p-6 sm:p-8 text-center space-y-6 overflow-hidden mb-8">
-                         <div className="absolute top-0 right-0 p-32 bg-emerald-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+                     <div className="relative bg-secondary/35 rounded-2xl border border-border/60 p-6 sm:p-8 text-center space-y-6 overflow-hidden mb-8">
                          <div className="relative z-10">
-                            <div className="inline-flex p-4 bg-emerald-500/20 rounded-full mb-4 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                                <LayoutDashboard className="w-8 h-8 text-emerald-300" />
+                            <div className="inline-flex p-4 bg-emerald-500/10 rounded-full mb-4 text-emerald-400">
+                                <LayoutDashboard className="w-8 h-8" />
                             </div>
                             <h3 className="text-2xl sm:text-3xl font-bold text-white mb-2 break-words">{t('ui.dashboard.find_your_squad')}</h3>
                             <p className="text-base text-gray-300 max-w-md mx-auto leading-relaxed">

@@ -64,23 +64,23 @@ input::-webkit-inner-spin-button {
 :root {
     --background: 224 71% 4%; /* slate-950 */
     --foreground: 210 40% 98%;
-    --card: 222 47% 11%; /* slate-900 */
+    --card: 224 71% 4%; /* slate-950 */
     --card-foreground: 210 40% 98%;
     --popover: 224 71% 4%;
     --popover-foreground: 210 40% 98%;
-    --primary: 0 72% 51%; /* red-600 */
+    --primary: 160 84% 39%; /* emerald-500 */
     --primary-foreground: 210 40% 98%;
-    --secondary: 215 28% 17%; /* slate-800 */
+    --secondary: 220 20% 12%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 215 28% 17%;
+    --muted: 220 20% 12%;
     --muted-foreground: 215 20% 65%;
-    --accent: 0 72% 51%;
+    --accent: 160 84% 39%; /* emerald-500 */
     --accent-foreground: 210 40% 98%;
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
-    --border: 215 28% 17%;
-    --input: 217 33% 17%; /* slate-800 */
-    --ring: 0 72% 51%;
+    --border: 220 18% 16%;
+    --input: 220 22% 10%;
+    --ring: 160 84% 39%;
     --radius: 0.75rem;
 }
 /* Hide scrollbars entirely for the phone (iOS) surfaces while keeping scroll. */
@@ -99,14 +99,14 @@ input::-webkit-inner-spin-button {
     background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: rgba(220, 38, 38, 0.4); /* red-600 with 40% opacity */
+    background-color: rgba(16, 185, 129, 0.4); /* emerald-500 with 40% opacity */
     border-radius: 10px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(220, 38, 38, 0.6); /* red-600 with 60% opacity */
+    background-color: rgba(16, 185, 129, 0.6); /* emerald-500 with 60% opacity */
 }
 /* For Firefox */
 .custom-scrollbar {
     scrollbar-width: thin;
-    scrollbar-color: rgba(220, 38, 38, 0.4) transparent;
+    scrollbar-color: rgba(16, 185, 129, 0.4) transparent;
 }

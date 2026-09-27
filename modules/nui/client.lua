@@ -114,6 +114,15 @@ RegisterNUICallback('bsgroup:nui:getLocale', function(_, cb)
     cb(lib.getLocales() or {})
 end)
 
+RegisterNUICallback('bsgroup:nui:notify', function(data, cb)
+    local delivered = Apps.notify({
+        title = data.title or 'Group',
+        body  = data.message or data.content or data.body,
+        type  = data.type,
+    })
+    cb({ delivered = delivered })
+end)
+
 RegisterNUICallback('bsgroup:nui:closeUI', function(_, cb)
     SetNuiFocus(false, false)
     cb('ok')

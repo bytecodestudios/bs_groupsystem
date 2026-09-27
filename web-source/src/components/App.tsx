@@ -58,7 +58,17 @@ function App() {
   const closeUI = async () => {
     setVisible(false);
     await fetchNui<any>("bsgroup:nui:closeUI", {});
-  }
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && visible && !appMode) {
+        closeUI();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [visible, appMode]);
 
     return (
     <motion.div className="h-full w-full antialiased relative overflow-hidden">
@@ -101,7 +111,7 @@ function App() {
 
         {/* Dev Mode Toolbar */}
         {import.meta.env.MODE === "development" && (
-          <div className="absolute bottom-4 right-4 flex flex-col space-y-2 z-50 bg-black/80 p-2 rounded-lg backdrop-blur-md text-white text-xs">
+          <div className="absolute bottom-4 right-4 flex flex-col space-y-2 z-50 bg-black/90 p-2 rounded-lg text-white text-xs">
             <div className="flex space-x-2">
               <button
                 onClick={() => { setPhoneMode(false); setVisible(false); }}

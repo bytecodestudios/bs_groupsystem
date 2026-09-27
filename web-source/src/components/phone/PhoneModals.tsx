@@ -10,9 +10,9 @@ import { Sheet, BigButton, Avatar, Switch } from './ui';
 
 const SheetHeader: React.FC<{ title: string; onClose: () => void }> = ({ title, onClose }) => (
     <div className="flex-shrink-0 flex items-center justify-between px-5 py-3">
-        <h3 className="text-[20px] font-bold tracking-tight">{title}</h3>
-        <button onClick={onClose} className="w-8 h-8 rounded-full bg-white/[0.08] flex items-center justify-center active:scale-90 transition-transform">
-            <X className="w-4 h-4 text-white/60" />
+        <h3 className="text-[20px] font-bold tracking-tight text-foreground">{title}</h3>
+        <button onClick={onClose} className="w-8 h-8 rounded-full bg-secondary hover:bg-muted flex items-center justify-center active:scale-90 transition-all">
+            <X className="w-4 h-4 text-muted-foreground" />
         </button>
     </div>
 );
@@ -51,25 +51,25 @@ export const PhoneCreateSheet: React.FC<{
             <div className="flex-1 overflow-y-auto no-scrollbar px-5 pb-5 space-y-5">
                 {/* Name */}
                 <div>
-                    <label className="text-[13px] font-semibold text-white/45 mb-1.5 block">{t('ui.modals.group_name')}</label>
+                    <label className="text-[13px] font-semibold text-muted-foreground mb-1.5 block">{t('ui.modals.group_name')}</label>
                     <input
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder={t('ui.modals.group_name_placeholder')}
-                        className="w-full bg-white/[0.06] border border-white/[0.08] rounded-2xl px-4 py-3 text-[16px] placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-secondary/40 border border-border/80 rounded-2xl px-4 py-3 text-[16px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-emerald-500/60 transition-colors"
                     />
                 </div>
 
                 {/* Max members stepper */}
                 <div>
-                    <label className="text-[13px] font-semibold text-white/45 mb-1.5 block">{t('ui.modals.max_members')}</label>
-                    <div className="flex items-center justify-between bg-white/[0.06] border border-white/[0.08] rounded-2xl px-4 py-2.5">
-                        <span className="text-[16px] font-semibold flex items-center gap-2"><Users className="w-4 h-4 text-white/40" />{maxMembers}</span>
+                    <label className="text-[13px] font-semibold text-muted-foreground mb-1.5 block">{t('ui.modals.max_members')}</label>
+                    <div className="flex items-center justify-between bg-secondary/40 border border-border/80 rounded-2xl px-4 py-2.5">
+                        <span className="text-[16px] font-semibold flex items-center gap-2 text-foreground"><Users className="w-4 h-4 text-muted-foreground" />{maxMembers}</span>
                         <div className="flex items-center gap-2">
-                            <button onClick={() => setMaxMembers((v) => Math.max(2, v - 1))} className="w-8 h-8 rounded-full bg-white/[0.08] flex items-center justify-center active:scale-90 transition-transform">
+                            <button onClick={() => setMaxMembers((v) => Math.max(2, v - 1))} className="w-8 h-8 rounded-full bg-secondary/70 hover:bg-secondary text-foreground flex items-center justify-center active:scale-90 transition-transform">
                                 <Minus className="w-4 h-4" />
                             </button>
-                            <button onClick={() => setMaxMembers((v) => Math.min(10, v + 1))} className="w-8 h-8 rounded-full bg-white/[0.08] flex items-center justify-center active:scale-90 transition-transform">
+                            <button onClick={() => setMaxMembers((v) => Math.min(10, v + 1))} className="w-8 h-8 rounded-full bg-secondary/70 hover:bg-secondary text-foreground flex items-center justify-center active:scale-90 transition-transform">
                                 <Plus className="w-4 h-4" />
                             </button>
                         </div>
@@ -78,14 +78,14 @@ export const PhoneCreateSheet: React.FC<{
 
                 {/* Privacy */}
                 <div>
-                    <label className="text-[13px] font-semibold text-white/45 mb-1.5 block">{t('ui.modals.privacy_settings')}</label>
+                    <label className="text-[13px] font-semibold text-muted-foreground mb-1.5 block">{t('ui.modals.privacy_settings')}</label>
                     <div className="grid grid-cols-3 gap-2">
                         {privacy.map((p) => (
                             <button
                                 key={p.id}
                                 onClick={() => setJoinType(p.id)}
-                                className={`flex flex-col items-center gap-1.5 py-3.5 rounded-2xl border transition-all ${
-                                    joinType === p.id ? 'border-emerald-500 bg-emerald-500/10 text-emerald-300' : 'border-white/[0.08] bg-white/[0.04] text-white/50'
+                                className={`flex flex-col items-center gap-1.5 py-3.5 rounded-2xl border-2 transition-all ${
+                                    joinType === p.id ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400 shadow-sm shadow-emerald-500/10' : 'border-border/70 bg-secondary/30 text-muted-foreground hover:bg-secondary/50 hover:border-border'
                                 }`}
                             >
                                 <p.icon className="w-5 h-5" />
@@ -93,7 +93,7 @@ export const PhoneCreateSheet: React.FC<{
                             </button>
                         ))}
                     </div>
-                    <p className="text-[12px] text-white/40 text-center mt-2 h-4">{privacy.find((p) => p.id === joinType)?.desc}</p>
+                    <p className="text-[12px] text-muted-foreground text-center mt-2 h-4">{privacy.find((p) => p.id === joinType)?.desc}</p>
                 </div>
 
                 {/* Illegal toggle */}
@@ -102,19 +102,19 @@ export const PhoneCreateSheet: React.FC<{
                         onClick={() => setIsIllegal((v) => !v)}
                         className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer ${
                             isIllegal
-                                ? 'border-red-500/30 bg-red-500/[0.08]'
-                                : 'border-white/[0.08] bg-white/[0.04]'
+                                ? 'border-red-500/40 bg-red-500/10'
+                                : 'border-border bg-secondary/30 hover:bg-secondary/50'
                         }`}
                     >
                         <div className="flex items-center gap-3 min-w-0 pr-2">
-                            <div className={`p-2.5 rounded-xl transition-colors flex-shrink-0 ${isIllegal ? 'bg-red-500/20 text-red-400' : 'bg-white/[0.06] text-white/40'}`}>
+                            <div className={`p-2.5 rounded-xl transition-colors flex-shrink-0 ${isIllegal ? 'bg-red-500/20 text-red-400' : 'bg-muted text-muted-foreground'}`}>
                                 <ShieldAlert className="w-5 h-5" />
                             </div>
                             <div className="min-w-0">
-                                <p className={`text-[14px] font-semibold transition-colors truncate ${isIllegal ? 'text-red-400' : 'text-white'}`}>
+                                <p className={`text-[14px] font-semibold transition-colors truncate ${isIllegal ? 'text-red-400' : 'text-foreground'}`}>
                                     {t('ui.modals.illegal_network')}
                                 </p>
-                                <p className="text-[12px] text-white/40 mt-0.5 truncate">
+                                <p className="text-[12px] text-muted-foreground mt-0.5 truncate">
                                     {t('ui.modals.illegal_network_desc')}
                                 </p>
                             </div>
@@ -179,30 +179,30 @@ export const PhoneInviteSheet: React.FC<{
             <SheetHeader title={t('ui.group_tabs.invite_member')} onClose={onClose} />
             <div className="flex-1 overflow-y-auto no-scrollbar px-5 pb-6 min-h-[240px]">
                 <div className="flex items-center justify-between mb-3">
-                    <p className="text-[13px] text-white/45">Nearby players (15m)</p>
-                    <button onClick={fetchPlayers} className={`p-2 rounded-full bg-white/[0.06] text-white/50 ${loading ? 'animate-spin' : ''}`}>
+                    <p className="text-[13px] text-muted-foreground">Nearby players (15m)</p>
+                    <button onClick={fetchPlayers} className={`p-2 rounded-full bg-secondary hover:bg-muted text-muted-foreground hover:text-foreground transition-colors ${loading ? 'animate-spin' : ''}`}>
                         <RefreshCw className="w-4 h-4" />
                     </button>
                 </div>
                 {loading ? (
                     <div className="py-16 flex flex-col items-center gap-3">
                         <div className="w-9 h-9 border-[3px] border-emerald-500/20 border-t-emerald-400 rounded-full animate-spin" />
-                        <p className="text-[13px] text-white/40">Scanning area...</p>
+                        <p className="text-[13px] text-muted-foreground">Scanning area...</p>
                     </div>
                 ) : players.length > 0 ? (
                     <div className="space-y-2">
                         {players.map((p) => (
-                            <motion.div key={p.source} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-3 p-3 rounded-2xl bg-white/[0.05] border border-white/[0.06]">
+                            <motion.div key={p.source} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-3 p-3 rounded-2xl bg-secondary/40 border border-border/50">
                                 <Avatar name={p.name} size={40} />
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-[15px] font-semibold truncate">{p.name}</p>
-                                    <p className="text-[11px] text-white/35 uppercase tracking-wide">ID: {p.source}</p>
+                                    <p className="text-[15px] font-semibold text-foreground truncate">{p.name}</p>
+                                    <p className="text-[11px] text-muted-foreground uppercase tracking-wide">ID: {p.source}</p>
                                 </div>
                                 <button
                                     onClick={() => invite(p.source, p.name)}
                                     disabled={inviting !== null}
                                     className={`w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90 ${
-                                        inviting === p.source ? 'bg-emerald-500 text-black' : 'bg-emerald-500/15 text-emerald-300'
+                                        inviting === p.source ? 'bg-emerald-600 text-white' : 'bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25'
                                     } disabled:opacity-50`}
                                 >
                                     {inviting === p.source ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
@@ -212,8 +212,8 @@ export const PhoneInviteSheet: React.FC<{
                     </div>
                 ) : (
                     <div className="py-16 flex flex-col items-center gap-3">
-                        <Users className="w-12 h-12 text-white/15" />
-                        <p className="text-[14px] text-white/40">No players found nearby</p>
+                        <Users className="w-12 h-12 text-muted-foreground/30" />
+                        <p className="text-[14px] text-muted-foreground">No players found nearby</p>
                     </div>
                 )}
             </div>
@@ -237,8 +237,8 @@ export const PhoneConfirmSheet: React.FC<{
                 <div className={`inline-flex p-4 rounded-3xl mb-4 ${danger ? 'bg-red-500/15' : 'bg-emerald-500/15'}`}>
                     <Icon className={`w-8 h-8 ${danger ? 'text-red-400' : 'text-emerald-400'}`} />
                 </div>
-                <h3 className="text-[20px] font-bold tracking-tight">{title}</h3>
-                <div className="text-[14px] text-white/50 mt-2 mb-6 leading-relaxed">{message}</div>
+                <h3 className="text-[20px] font-bold tracking-tight text-foreground">{title}</h3>
+                <div className="text-[14px] text-muted-foreground mt-2 mb-6 leading-relaxed">{message}</div>
                 <div className="space-y-2.5">
                     <BigButton variant={danger ? 'danger' : 'primary'} onClick={onConfirm}>{confirmText}</BigButton>
                     <BigButton variant="neutral" onClick={onClose}>{t('ui.modals.cancel')}</BigButton>

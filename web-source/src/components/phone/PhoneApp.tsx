@@ -55,12 +55,11 @@ const PhoneApp: React.FC = () => {
 
     return (
         <div
-            className="h-full w-full flex flex-col min-h-0 relative overflow-hidden text-white select-none"
+            className="h-full w-full flex flex-col min-h-0 relative overflow-hidden text-foreground bg-background select-none"
             style={{
                 fontFamily: IOS_FONT,
                 paddingTop: 'max(env(safe-area-inset-top), 30px)',
                 paddingBottom: 'max(env(safe-area-inset-bottom), 22px)',
-                background: 'linear-gradient(180deg, #0b0f15 0%, #070a0f 100%)',
             }}
         >
             {isLoading ? (
@@ -121,26 +120,24 @@ const PhoneApp: React.FC = () => {
                                 </AnimatePresence>
                             </div>
 
-                            {/* Floating pill bottom tab bar */}
+                            {/* Floating pill bottom tab bar matching laptop theme */}
                             <div className="flex-shrink-0 px-5 pt-1.5 pb-2">
-                                <div className="flex items-center justify-around rounded-full bg-white/[0.06] border border-white/[0.08] px-2 py-1.5">
+                                <div className="flex items-center justify-around rounded-full bg-secondary border border-border/60 px-2 py-1.5">
                                     {tabs.map((tb) => {
                                         const active = tab === tb.id;
                                         return (
                                             <button
                                                 key={tb.id}
                                                 onClick={() => setTab(tb.id)}
-                                                className="relative flex flex-col items-center gap-0.5 flex-1 py-1 active:opacity-60 transition-opacity outline-none focus:outline-none focus-visible:outline-none"
+                                                className={`relative flex flex-col items-center gap-0.5 flex-1 py-1 active:opacity-60 transition-all outline-none focus:outline-none ${
+                                                    active ? 'text-emerald-400' : 'text-muted-foreground hover:text-foreground'
+                                                }`}
                                             >
                                                 <tb.icon
                                                     className="w-[20px] h-[20px] transition-colors"
                                                     strokeWidth={active ? 2.4 : 1.9}
-                                                    style={{ color: active ? '#34d399' : 'rgba(255,255,255,0.4)' }}
                                                 />
-                                                <span
-                                                    className="text-[10px] font-medium transition-colors"
-                                                    style={{ color: active ? '#34d399' : 'rgba(255,255,255,0.4)' }}
-                                                >
+                                                <span className="text-[10px] font-medium transition-colors">
                                                     {tb.label}
                                                 </span>
                                             </button>

@@ -6,12 +6,12 @@ export const isPhoneEnv = (): boolean =>
   typeof (window as any).useNuiEvent === "function";
 
 // Detects a laptop host (av_laptop via av_apps, kartik-laptop): the app page is
-// mounted in the host's iframe and the host injects no helpers of its own.
+// mounted in a nested iframe inside the laptop frame (window.parent !== window.top),
+// unlike the standalone FiveM overlay which is a direct child of CEF root (window.parent === window.top).
 export const isLaptopEnv = (): boolean => {
   try {
-    return window.parent !== window && !isPhoneEnv();
+    return window.parent !== window.top && !isPhoneEnv();
   } catch {
-    // Cross-origin parent access throws, which only happens when framed.
-    return !isPhoneEnv();
+    return false;
   }
 };

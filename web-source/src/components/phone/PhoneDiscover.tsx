@@ -27,16 +27,14 @@ const JoinButton: React.FC<{ group: Group; isInGroup: boolean; hasSentRequest: b
 
     let text = t('ui.group_card.request_to_join');
     let disabled = false;
-    let cls = 'bg-emerald-500 text-black active:bg-emerald-400 px-3 py-1.5 text-[12px]';
+    let cls = 'bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-bold shadow-md shadow-emerald-500/20 active:opacity-90 px-3 py-1.5 text-[12px]';
 
-    if (isInGroup) { text = 'Joined'; disabled = true; }
-    else if (isFull) { text = t('ui.group_card.group_is_full'); disabled = true; }
-    else if (hasSentRequest) { text = t('ui.group_card.request_sent'); disabled = true; cls = 'bg-sky-400/15 text-sky-300 px-2.5 py-1 text-[11px]'; }
-    else if (group.joinType === 'Closed') { text = t('ui.group_card.closed'); disabled = true; }
-    else if (group.joinType === 'Invite Only') { text = t('ui.group_card.invite_only'); disabled = true; }
-    else if (group.status !== 'Recruiting') { text = t('ui.group_card.not_recruiting'); disabled = true; }
-
-    if (disabled && cls.startsWith('bg-emerald')) cls = 'bg-white/[0.06] text-white/40 px-2.5 py-1 text-[11px]';
+    if (isInGroup) { text = 'Joined'; disabled = true; cls = 'bg-secondary text-muted-foreground cursor-not-allowed opacity-70 px-2.5 py-1 text-[11px]'; }
+    else if (isFull) { text = t('ui.group_card.group_is_full'); disabled = true; cls = 'bg-yellow-500/20 text-yellow-300 border border-yellow-400/30 px-2.5 py-1 text-[11px]'; }
+    else if (hasSentRequest) { text = t('ui.group_card.request_sent'); disabled = true; cls = 'bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2.5 py-1 text-[11px]'; }
+    else if (group.joinType === 'Closed') { text = t('ui.group_card.closed'); disabled = true; cls = 'bg-secondary text-muted-foreground cursor-not-allowed opacity-70 px-2.5 py-1 text-[11px]'; }
+    else if (group.joinType === 'Invite Only') { text = t('ui.group_card.invite_only'); disabled = true; cls = 'bg-secondary text-muted-foreground cursor-not-allowed opacity-70 px-2.5 py-1 text-[11px]'; }
+    else if (group.status !== 'Recruiting') { text = t('ui.group_card.not_recruiting'); disabled = true; cls = 'bg-secondary text-muted-foreground cursor-not-allowed px-2.5 py-1 text-[11px]'; }
 
     return (
         <button
@@ -80,25 +78,25 @@ export const PhoneDiscover: React.FC<Props> = ({
         <div className="h-full flex flex-col min-h-0">
             <div className="flex-shrink-0 px-5 pt-3 pb-3">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-[32px] leading-none font-bold tracking-tight">{t('ui.dashboard.discover_groups')}</h1>
+                    <h1 className="text-[32px] leading-none font-bold tracking-tight text-foreground">{t('ui.dashboard.discover_groups')}</h1>
                     <button
                         onClick={onOpenCreate}
-                        className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center active:scale-90 transition-transform"
+                        className="w-10 h-10 rounded-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white flex items-center justify-center active:scale-90 transition-transform shadow-lg shadow-emerald-500/20"
                     >
-                        <Plus className="w-6 h-6 text-black" strokeWidth={2.6} />
+                        <Plus className="w-5 h-5 text-white" strokeWidth={2.6} />
                     </button>
                 </div>
             </div>
 
             {/* Search */}
             <div className="flex-shrink-0 px-4 pb-3">
-                <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-white/[0.07] border border-white/[0.06]">
-                    <Search className="w-[18px] h-[18px] text-white/40" />
+                <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-input border border-border focus-within:border-emerald-500/50 transition-colors">
+                    <Search className="w-[18px] h-[18px] text-muted-foreground" />
                     <input
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         placeholder={t('ui.dashboard.search_placeholder')}
-                        className="flex-1 bg-transparent text-[15px] placeholder:text-white/35 focus:outline-none"
+                        className="flex-1 bg-transparent text-[15px] text-foreground placeholder:text-muted-foreground focus:outline-none"
                     />
                 </div>
             </div>
@@ -119,7 +117,7 @@ export const PhoneDiscover: React.FC<Props> = ({
                     <button
                         onClick={() => setIllegalOnly((v) => !v)}
                         className={`w-full flex items-center justify-center gap-2 py-2 rounded-full text-[13px] font-semibold transition-colors ${
-                            illegalOnly ? 'bg-red-500/15 text-red-300 border border-red-500/25' : 'bg-white/[0.05] text-red-400/70'
+                            illegalOnly ? 'bg-red-500/20 text-red-300 border border-red-500/30' : 'bg-secondary/40 text-red-400 hover:text-red-300 border border-border/50'
                         }`}
                     >
                         <ShieldAlert className="w-4 h-4" /> {t('ui.dashboard.filter_illegal')}
@@ -139,7 +137,7 @@ export const PhoneDiscover: React.FC<Props> = ({
                                             <Avatar name={g.name} size={40} className="flex-shrink-0" />
                                             <div className="min-w-0 flex-1">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="text-[15px] font-bold text-white truncate">{g.name}</div>
+                                                    <div className="text-[15px] font-bold text-foreground truncate">{g.name}</div>
                                                     {g.isIllegal && (
                                                         <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-red-500/15 text-red-400 border border-red-500/20 flex items-center gap-0.5 flex-shrink-0">
                                                             <ShieldAlert className="w-2.5 h-2.5 text-red-400" />
@@ -147,11 +145,11 @@ export const PhoneDiscover: React.FC<Props> = ({
                                                         </span>
                                                     )}
                                                 </div>
-                                                <div className="flex items-center gap-1.5 text-[11px] text-white/40 mt-0.5">
-                                                    <Users2 className="w-3.5 h-3.5 flex-shrink-0 text-white/35" />
+                                                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-0.5">
+                                                    <Users2 className="w-3.5 h-3.5 flex-shrink-0 text-muted-foreground" />
                                                     <span>{g.members.length}/{g.maxMembers}</span>
-                                                    <span className="w-1 h-1 rounded-full bg-white/20" />
-                                                    <span>{g.status}</span>
+                                                    <span className="w-1 h-1 rounded-full bg-border" />
+                                                    <span className="text-emerald-400 font-semibold">{g.status}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -168,10 +166,10 @@ export const PhoneDiscover: React.FC<Props> = ({
                     </div>
                 ) : (
                     <div className="mt-16 flex flex-col items-center text-center px-8">
-                        <div className="p-5 rounded-full bg-white/[0.04] mb-4">
-                            <Users2 className="w-10 h-10 text-white/20" />
+                        <div className="p-5 rounded-full bg-secondary/40 border border-border/50 mb-4">
+                            <Users2 className="w-10 h-10 text-muted-foreground" />
                         </div>
-                        <p className="text-[15px] text-white/45">
+                        <p className="text-[15px] text-muted-foreground">
                             {allGroups.length === 0 ? t('ui.dashboard.no_public_groups') : t('ui.dashboard.no_match')}
                         </p>
                     </div>

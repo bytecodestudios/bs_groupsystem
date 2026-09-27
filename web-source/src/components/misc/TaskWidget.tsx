@@ -221,7 +221,6 @@ export const TaskWidget: React.FC<TaskWidgetProps> = () => {
                                 animate={{ scale: 1, rotate: 0 }}
                                 exit={{ scale: 0 }}
                                 className="text-emerald-400"
-                                style={{ filter: 'drop-shadow(0px 1px 3px rgba(0,0,0,0.9))' }}
                             >
                                 <Check size={18} strokeWidth={3} />
                             </motion.div>

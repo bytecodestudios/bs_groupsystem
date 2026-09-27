@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback, ReactNode } fr
 import { AnimatePresence, motion } from 'framer-motion';
 import { CheckCircle2, AlertTriangle, Info, XCircle } from 'lucide-react';
 import { isPhoneEnv } from '../../utils/phone';
+import { fetchNui } from '../../utils/fetchNui';
 
 const MotionDiv = motion.div;
 
@@ -27,6 +28,26 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
   const phoneMode = isPhoneEnv();
 
   const addNotification = useCallback((type: NotificationType, title: string, message: string, duration = 4000) => {
+    // If running in a phone host (sd-phone / lb-phone), trigger the phone's native iOS-style banner
+    const phoneNotify = (window as any).SendNotification || (window as any).sendNotification;
+    if (typeof phoneNotify === 'function') {
+      try {
+        phoneNotify({
+          title,
+          content: message,
+        });
+        return;
+      } catch (err) {
+        console.error('[Notification] Phone notification call failed:', err);
+      }
+    }
+
+    if (phoneMode) {
+      // In phone mode without direct SendNotification on window, route via NUI to client Apps.notify
+      fetchNui('bsgroup:nui:notify', { title, message, type });
+      return;
+    }
+
     const id = Math.random().toString(36).substring(7);
     const newNotification = { id, type, title, message, duration };
     
@@ -37,7 +58,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
         setNotifications((prev) => prev.filter((n) => n.id !== id));
       }, duration);
     }
-  }, []);
+  }, [phoneMode]);
 
   const removeNotification = useCallback((id: string) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
@@ -46,24 +67,16 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
   return (
     <NotificationContext.Provider value={{ addNotification, removeNotification }}>
       {children}
-      {/* Global Notification Container.
-          On a phone host the app fills a narrow screen, so a fixed top-right
-          320px toast overlaps the content. There we render a compact banner
-          pinned to the top that respects the phone's safe-area inset. */}
-      <div
-        className={
-          phoneMode
-            ? 'fixed top-0 inset-x-0 z-[99999] flex flex-col gap-2 px-3 pointer-events-none'
-            : 'fixed top-8 right-8 z-[99999] flex flex-col gap-3 w-80 pointer-events-none'
-        }
-        style={phoneMode ? { paddingTop: 'calc(max(env(safe-area-inset-top), 30px) + 14px)' } : undefined}
-      >
-        <AnimatePresence mode="popLayout">
-          {notifications.map((notif) => (
-            <NotificationToast key={notif.id} notification={notif} phoneMode={phoneMode} />
-          ))}
-        </AnimatePresence>
-      </div>
+      {/* Global Notification Container: only displayed on non-phone hosts (laptop/standalone) */}
+      {!phoneMode && (
+        <div className="fixed top-8 right-8 z-[99999] flex flex-col gap-3 w-80 pointer-events-none">
+          <AnimatePresence mode="popLayout">
+            {notifications.map((notif) => (
+              <NotificationToast key={notif.id} notification={notif} phoneMode={false} />
+            ))}
+          </AnimatePresence>
+        </div>
+      )}
     </NotificationContext.Provider>
   );
 };

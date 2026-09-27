@@ -82,16 +82,16 @@ export const PhoneDetails: React.FC<Props> = ({ group, citizenId, onBack, onUpda
         <div className="h-full flex flex-col min-h-0">
             {/* Nav */}
             <div className="flex-shrink-0 px-4 pt-3 pb-3">
-                <button onClick={onBack} className="flex items-center -ml-1 mb-2 text-[15px] font-medium text-emerald-400 active:opacity-60">
+                <button onClick={onBack} className="flex items-center -ml-1 mb-2 text-[15px] font-medium text-emerald-400 hover:text-emerald-300 active:opacity-60 transition-colors">
                     <ChevronLeft className="w-5 h-5 -ml-1" />
                     <span>{t('ui.details.tab_members')}</span>
                 </button>
                 <div className="flex items-center justify-between gap-3">
-                    <h1 className="text-[28px] font-bold tracking-tight truncate">{group.name}</h1>
+                    <h1 className="text-[28px] font-bold tracking-tight truncate text-foreground">{group.name}</h1>
                     <button
                         onClick={() => setLeaveOpen(true)}
-                        className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-semibold ${
-                            isLeader ? 'bg-red-500/15 text-red-300' : 'bg-white/[0.08] text-white/70'
+                        className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-semibold transition-colors ${
+                            isLeader ? 'bg-red-500/15 text-red-300 hover:bg-red-500/25 border border-red-500/20' : 'bg-secondary hover:bg-muted text-foreground border border-border'
                         }`}
                     >
                         <LogOut className="w-3.5 h-3.5" />
@@ -105,13 +105,13 @@ export const PhoneDetails: React.FC<Props> = ({ group, citizenId, onBack, onUpda
                 <Card className="flex items-stretch">
                     {[
                         { label: t('ui.details.status'), value: group.status, cls: 'text-emerald-400' },
-                        { label: t('ui.details.members'), value: `${group.members.length}/${group.maxMembers}`, cls: 'text-white' },
-                        { label: t('ui.details.join_type'), value: group.joinType, cls: 'text-sky-400' },
+                        { label: t('ui.details.members'), value: `${group.members.length}/${group.maxMembers}`, cls: 'text-foreground' },
+                        { label: t('ui.details.join_type'), value: group.joinType, cls: 'text-blue-400' },
                     ].map((s, i) => (
                         <React.Fragment key={s.label}>
-                            {i > 0 && <div className="w-px my-3 bg-white/[0.08]" />}
+                            {i > 0 && <div className="w-px my-3 bg-border" />}
                             <div className="flex-1 py-3 text-center min-w-0">
-                                <p className="text-[10px] uppercase tracking-wide text-white/40">{s.label}</p>
+                                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{s.label}</p>
                                 <p className={`text-[15px] font-bold truncate px-1 ${s.cls}`}>{s.value}</p>
                             </div>
                         </React.Fragment>
@@ -142,11 +142,11 @@ export const PhoneDetails: React.FC<Props> = ({ group, citizenId, onBack, onUpda
                                             <Row key={m.id} first={i === 0} className="relative">
                                                 <Avatar name={m.name} size={42} online={m.isOnline} />
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-[15px] font-semibold flex items-center gap-1.5 truncate">
+                                                    <p className="text-[15px] font-semibold flex items-center gap-1.5 truncate text-foreground">
                                                         {m.name}
-                                                        {memberIsLeader && <Crown className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />}
+                                                        {memberIsLeader && <Crown className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0" />}
                                                     </p>
-                                                    <p className="text-[12px] text-white/40">
+                                                    <p className="text-[12px] text-muted-foreground">
                                                         {memberIsLeader ? t('ui.group_tabs.group_leader') : t('ui.group_tabs.member')}
                                                     </p>
                                                 </div>
@@ -154,9 +154,9 @@ export const PhoneDetails: React.FC<Props> = ({ group, citizenId, onBack, onUpda
                                                     <div className="relative">
                                                         <button
                                                             onClick={(e) => { e.stopPropagation(); setMenuFor(menuFor === m.id ? null : m.id); }}
-                                                            className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center active:scale-90"
+                                                            className="w-8 h-8 rounded-full bg-secondary hover:bg-muted flex items-center justify-center active:scale-90 transition-colors"
                                                         >
-                                                            <MoreHorizontal className="w-4 h-4 text-white/60" />
+                                                            <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
                                                         </button>
                                                         <AnimatePresence>
                                                             {menuFor === m.id && (
@@ -165,17 +165,17 @@ export const PhoneDetails: React.FC<Props> = ({ group, citizenId, onBack, onUpda
                                                                     animate={{ opacity: 1, scale: 1, y: 0 }}
                                                                     exit={{ opacity: 0, scale: 0.92 }}
                                                                     onClick={(e) => e.stopPropagation()}
-                                                                    className="absolute right-0 top-10 z-20 w-44 p-1 rounded-2xl bg-[#1a1f28] border border-white/10"
+                                                                    className="absolute right-0 top-10 z-20 w-44 p-1 rounded-2xl bg-card border border-border shadow-xl"
                                                                 >
                                                                     <button
                                                                         onClick={() => { memberAction('promoteLeader', { groupId: group.id, newLeaderId: m.id }, m.name); setMenuFor(null); }}
-                                                                        className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[14px] active:bg-white/[0.06]"
+                                                                        className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[14px] text-foreground hover:bg-secondary active:bg-secondary/70 transition-colors"
                                                                     >
-                                                                        <Crown className="w-4 h-4 text-amber-400" />{t('ui.group_tabs.promote')}
+                                                                        <Crown className="w-4 h-4 text-yellow-400" />{t('ui.group_tabs.promote')}
                                                                     </button>
                                                                     <button
                                                                         onClick={() => { setKickFor({ id: m.id, name: m.name }); setMenuFor(null); }}
-                                                                        className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[14px] text-red-400 active:bg-red-500/10"
+                                                                        className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[14px] text-red-400 hover:bg-red-500/20 active:bg-red-500/30 transition-colors"
                                                                     >
                                                                         <UserX className="w-4 h-4" />{t('ui.group_tabs.kick')}
                                                                     </button>
@@ -197,7 +197,7 @@ export const PhoneDetails: React.FC<Props> = ({ group, citizenId, onBack, onUpda
                             ) : (
                                 <div className="space-y-3">
                                     {isFull && (
-                                        <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-amber-300 text-[13px]">
+                                        <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-yellow-500/20 border border-yellow-400/30 text-yellow-300 text-[13px]">
                                             <Info className="w-5 h-5 flex-shrink-0" />
                                             <span>{t('ui.group_tabs.group_full_warning')}</span>
                                         </div>
@@ -206,19 +206,19 @@ export const PhoneDetails: React.FC<Props> = ({ group, citizenId, onBack, onUpda
                                         <Card key={req.id} className="p-3.5">
                                             <div className="flex items-center gap-3 mb-3">
                                                 <Avatar name={req.name} size={42} />
-                                                <p className="text-[16px] font-semibold flex-1 truncate">{req.name}</p>
+                                                <p className="text-[16px] font-semibold flex-1 truncate text-foreground">{req.name}</p>
                                             </div>
                                             <div className="grid grid-cols-2 gap-2.5">
                                                 <button
                                                     onClick={() => processRequest(req.id, 'decline', req.name)}
-                                                    className="py-2.5 rounded-xl text-[14px] font-semibold bg-red-500/15 text-red-300 flex items-center justify-center gap-1.5 active:scale-95 transition-transform"
+                                                    className="py-2.5 rounded-xl text-[14px] font-semibold bg-red-500/15 text-red-300 hover:bg-red-500/25 flex items-center justify-center gap-1.5 active:scale-95 transition-all"
                                                 >
                                                     <UserX className="w-4 h-4" />{t('ui.group_tabs.decline')}
                                                 </button>
                                                 <button
                                                     onClick={() => processRequest(req.id, 'accept', req.name)}
                                                     disabled={isFull}
-                                                    className="py-2.5 rounded-xl text-[14px] font-semibold bg-emerald-500 text-black flex items-center justify-center gap-1.5 active:scale-95 transition-transform disabled:opacity-40"
+                                                    className="py-2.5 rounded-xl text-[14px] font-semibold bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-md shadow-emerald-500/20 disabled:opacity-40"
                                                 >
                                                     <UserCheck className="w-4 h-4" />{t('ui.group_tabs.accept')}
                                                 </button>
@@ -233,11 +233,11 @@ export const PhoneDetails: React.FC<Props> = ({ group, citizenId, onBack, onUpda
                             <div className="space-y-3">
                                 <Card className="p-4">
                                     <div className="flex justify-between items-center mb-2">
-                                        <span className="text-[14px] font-semibold">{t('ui.group_tabs.task_completion')}</span>
-                                        <span className="text-[13px] text-white/50">{t('ui.group_tabs.done_format', String(completedTasks), String(group.partyTasks.length))}</span>
+                                        <span className="text-[14px] font-semibold text-foreground">{t('ui.group_tabs.task_completion')}</span>
+                                        <span className="text-[12px] font-semibold text-blue-300 bg-blue-500/10 px-2 py-0.5 rounded-full">{t('ui.group_tabs.done_format', String(completedTasks), String(group.partyTasks.length))}</span>
                                     </div>
-                                    <div className="h-2 rounded-full bg-white/10 overflow-hidden">
-                                        <motion.div className="h-full rounded-full bg-emerald-400" initial={{ width: 0 }} animate={{ width: `${progress}%` }} transition={{ duration: 0.7, ease: 'easeOut' }} />
+                                    <div className="h-2 rounded-full bg-muted overflow-hidden">
+                                        <motion.div className="h-full rounded-full bg-emerald-500" initial={{ width: 0 }} animate={{ width: `${progress}%` }} transition={{ duration: 0.7, ease: 'easeOut' }} />
                                     </div>
                                 </Card>
                                 {group.partyTasks.length > 0 ? (
@@ -245,9 +245,9 @@ export const PhoneDetails: React.FC<Props> = ({ group, citizenId, onBack, onUpda
                                         {group.partyTasks.map((task, i) => (
                                             <Row key={task.id} first={i === 0}>
                                                 <div className="flex-shrink-0">
-                                                    {task.completed ? <CheckCircle2 className="w-6 h-6 text-emerald-400" /> : <Circle className="w-6 h-6 text-white/25" />}
+                                                    {task.completed ? <CheckCircle2 className="w-5 h-5 text-emerald-400" /> : <div className="w-4 h-4 rounded-full border-2 border-muted-foreground shrink-0" />}
                                                 </div>
-                                                <span className={`flex-1 text-[15px] ${task.completed ? 'line-through text-white/35' : ''}`}>{task.title}</span>
+                                                <span className={`flex-1 text-[15px] ${task.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>{task.title}</span>
                                             </Row>
                                         ))}
                                     </Card>
@@ -268,7 +268,7 @@ export const PhoneDetails: React.FC<Props> = ({ group, citizenId, onBack, onUpda
                 {leaveOpen && (
                     <PhoneConfirmSheet
                         title={isLeader ? t('ui.details.disband_title') : t('ui.details.leave_title')}
-                        message={<>{t('ui.details.confirm_action_prefix')} {isLeader ? t('ui.details.disband_action') : t('ui.details.leave_action')} <span className="font-semibold text-white">{group.name}</span>{t('ui.details.cannot_be_undone')}</>}
+                        message={<>{t('ui.details.confirm_action_prefix')} {isLeader ? t('ui.details.disband_action') : t('ui.details.leave_action')} <span className="font-semibold text-foreground">{group.name}</span>{t('ui.details.cannot_be_undone')}</>}
                         confirmText={isLeader ? t('ui.details.disband_confirm') : t('ui.details.leave_confirm')}
                         Icon={Trash2}
                         onConfirm={() => { onDisbandOrLeave(); setLeaveOpen(false); }}
@@ -294,10 +294,10 @@ export const PhoneDetails: React.FC<Props> = ({ group, citizenId, onBack, onUpda
 
 const EmptyState: React.FC<{ icon: React.ElementType; title: string; subtitle: string }> = ({ icon: Icon, title, subtitle }) => (
     <div className="py-16 flex flex-col items-center text-center">
-        <div className="p-5 rounded-full bg-white/[0.04] mb-4">
-            <Icon className="w-10 h-10 text-white/20" />
+        <div className="p-5 rounded-full bg-secondary/40 border border-border/50 mb-4">
+            <Icon className="w-10 h-10 text-muted-foreground" />
         </div>
-        <h4 className="text-[17px] font-semibold">{title}</h4>
-        <p className="text-[13px] text-white/40 mt-1">{subtitle}</p>
+        <h4 className="text-[17px] font-semibold text-foreground">{title}</h4>
+        <p className="text-[13px] text-muted-foreground mt-1">{subtitle}</p>
     </div>
 );
