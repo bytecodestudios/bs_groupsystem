@@ -47,7 +47,9 @@ export async function fetchNui<T = unknown>(
   if ((window as any).GetParentResourceName) {
     try {
       const parent = (window as any).GetParentResourceName();
-      if (parent && !parent.includes("phone") && !parent.includes("mobile")) {
+      // Hosts that frame this page (phones, laptops) are not the owner of these
+      // NUI callbacks, so keep targeting this resource in that case.
+      if (parent && !parent.includes("phone") && !parent.includes("mobile") && !parent.includes("laptop")) {
         resourceName = parent;
       }
     } catch {

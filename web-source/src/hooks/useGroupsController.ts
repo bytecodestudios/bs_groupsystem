@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { fetchNui } from '../utils/fetchNui';
 import { useNuiEvent } from './useNuiEvent';
+import { isLaptopEnv } from '../utils/phone';
 import { Group } from '../utils/types';
 import { transformParties } from '../utils/groupUtils';
 import { useNotifications } from '../components/misc/Notification';
@@ -70,6 +71,15 @@ export function useGroupsController() {
         fetchGroupsData().finally(() => setIsLoading(false));
     }, []);
 
+    // Inside a laptop frame the push channel depends on the host exposing a
+    // send export (av_apps builds differ), so poll while the app is on screen.
+    // Live pushes still arrive when available; this only closes the gap.
+    useEffect(() => {
+        if (!isLaptopEnv()) return;
+        const interval = setInterval(() => { fetchGroupsData(); }, 5000);
+        return () => clearInterval(interval);
+    }, [citizenId]);
+
     const handleVpnToggle = async (connect: boolean) => {
         const response = await fetchNui<{ success: boolean, connected: boolean, msg?: string }>('bsgroup:nui:toggleVpn', { connect });
         if (response?.success) {
@@ -79,6 +89,14 @@ export function useGroupsController() {
             addNotification('error', t('ui.groups.notif_vpn_error'), response.msg, 5000);
         }
     };
+
+    // A phone host keeps the app frame alive between opens, so the mount-time
+    // fetch can be many minutes old by the time the player looks at it again.
+    // Re-pull whenever the app is shown so the dashboard (join requests, member
+    // count, tasks) matches the server.
+    useNuiEvent<boolean>('setVisible', (visible) => {
+        if (visible) fetchGroupsData();
+    });
 
     useNuiEvent<any>('refreshParties', (response) => {
         if (citizenId) {
@@ -154,9 +172,33 @@ export function useGroupsController() {
         }
     };
 
+    // Leaders can resolve join requests straight from the dashboard, so this
+    // lives on the controller instead of the details view both front-ends open.
+    const handleProcessRequest = async (groupId: string, requestId: string, action: 'accept' | 'decline', requestName: string) => {
+        const response = await fetchNui<{ status: boolean, msg?: string }>("bsgroup:nui:processRequest", {
+            groupId,
+            requestId,
+            action,
+            requestName,
+        });
+        if (response?.status) {
+            await fetchGroupsData();
+            if (action === 'accept') {
+                addNotification('success', t('ui.group_tabs.notif_new_member'), t('ui.group_tabs.notif_new_member_format', requestName));
+            } else {
+                addNotification('info', t('ui.group_tabs.notif_request_declined'), t('ui.group_tabs.notif_declined_format', requestName));
+            }
+        } else {
+            addNotification('error', t('ui.group_tabs.notif_failed'), response?.msg || t('ui.groups.notif_failed'));
+        }
+    };
+
     const handleUpdateGroup = async (updatedGroup: Group) => {
+        // Single-group payloads carry no party id, so keep the one we opened the
+        // details with; otherwise the id stops matching myGroup and the sync
+        // effect above can no longer feed live refreshes into this view.
+        setSelectedGroup((prev) => (prev ? { ...updatedGroup, id: prev.id } : updatedGroup));
         await fetchGroupsData();
-        setSelectedGroup(updatedGroup);
     };
 
     const handleDisbandOrLeave = async () => {
@@ -191,6 +233,7 @@ export function useGroupsController() {
         handleCreateGroup,
         handleRequestToJoin,
         handleResolveJobOffer,
+        handleProcessRequest,
         handleUpdateGroup,
         handleDisbandOrLeave,
     };

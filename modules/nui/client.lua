@@ -133,3 +133,19 @@ lib.callback.register('bs_groupsystem:client:receiveConfirmationPopup', function
     })
     return { status = alert == 'confirm' }
 end)
+
+-- av_laptop mounts the app's iframe without a Lua open/close hook, so the UI
+-- reports its own lifecycle. Both callbacks are only ever sent by a UI running
+-- inside a laptop frame, never by the standalone overlay.
+RegisterNUICallback('bsgroup:nui:appOpened', function(_, cb)
+    -- Other laptop hosts report open/close through their own adapter, so only
+    -- claim the surface when this is the one without a Lua hook.
+    if Apps.isRegistered('av_apps') then Apps.setActive('av_apps') end
+    TriggerEvent('bs_groupsystem:client:toggle', true)
+    cb('ok')
+end)
+
+RegisterNUICallback('bsgroup:nui:appClosed', function(_, cb)
+    if Apps.isRegistered('av_apps') then Apps.setActive(nil) end
+    cb('ok')
+end)

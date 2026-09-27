@@ -30,6 +30,20 @@ Config.AppSettings = {
     end,
 }
 
+---av_laptop app integration (registered through av_apps).
+---@type table
+Config.LaptopApp = {
+    name = "bsgroup",                   -- unique app name inside av_apps, never shown to players
+    label = "Groups",                   -- title shown on the laptop home screen
+    icon = ('%s/web/icon.svg'):format(GetCurrentResourceName()),
+    isEnabled = function(serial)        -- return false to hide the app from this laptop
+        return true
+    end,
+    ---Optional override when your av_apps build exposes a different push export.
+    ---@type fun(data: table)|nil
+    sendMessage = nil,
+}
+
 ---Phone app integration, supported: sd-phone (also registers under lb-phone).
 ---@type table
 Config.PhoneApp = {

@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, ChevronRight, CheckCircle2, Circle, Clock, Send, Users, ShieldAlert, Briefcase } from 'lucide-react';
+import { Plus, ChevronRight, CheckCircle2, Circle, Clock, Send, Users, ShieldAlert, Briefcase, UserCheck, UserX } from 'lucide-react';
 import { Group } from '../../utils/types';
 import { useLocale } from '../../hooks/useLocale';
 import { Card, Row, Avatar, BigButton } from './ui';
@@ -14,6 +14,7 @@ interface Props {
     onOpenCreate: () => void;
     onRequestToJoin: (id: string) => void;
     onResolveJobOffer: (accept: boolean) => void;
+    onProcessRequest: (groupId: string, requestId: string, action: 'accept' | 'decline', requestName: string) => void | Promise<void>;
     onGoDiscover: () => void;
 }
 
@@ -25,9 +26,13 @@ export const PhoneDashboard: React.FC<Props> = ({
     onSelectGroup,
     onOpenCreate,
     onResolveJobOffer,
+    onProcessRequest,
     onGoDiscover,
 }) => {
     const { t } = useLocale();
+    // Locks the row's buttons while the NUI round-trip is in flight so a leader
+    // can't double-accept the same applicant.
+    const [busyRequest, setBusyRequest] = useState<string | null>(null);
 
     const featured = useMemo(
         () =>
@@ -39,6 +44,17 @@ export const PhoneDashboard: React.FC<Props> = ({
 
     const outgoing = useMemo(() => allGroups.filter((g) => sentRequests.has(g.id)), [allGroups, sentRequests]);
     const incoming = myGroup?.requests || [];
+    const isFull = !!myGroup && myGroup.members.length >= myGroup.maxMembers;
+
+    const resolveRequest = async (requestId: string, action: 'accept' | 'decline', requestName: string) => {
+        if (!myGroup || busyRequest) return;
+        setBusyRequest(requestId);
+        try {
+            await onProcessRequest(myGroup.id, requestId, action, requestName);
+        } finally {
+            setBusyRequest(null);
+        }
+    };
 
     return (
         <div className="h-full overflow-y-auto no-scrollbar">
@@ -183,7 +199,24 @@ export const PhoneDashboard: React.FC<Props> = ({
                                                 <p className="text-[15px] font-medium truncate">{req.name}</p>
                                                 <p className="text-[12px] text-amber-400">{t('ui.dashboard.join_requests')}</p>
                                             </div>
-                                            <span className="w-2 h-2 rounded-full bg-amber-400" />
+                                            <div className="flex items-center gap-2 flex-shrink-0">
+                                                <button
+                                                    aria-label={t('ui.group_tabs.decline')}
+                                                    onClick={() => resolveRequest(req.id, 'decline', req.name)}
+                                                    disabled={busyRequest !== null}
+                                                    className="w-[34px] h-[34px] rounded-full bg-red-500/15 text-red-300 flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
+                                                >
+                                                    <UserX className="w-[17px] h-[17px]" />
+                                                </button>
+                                                <button
+                                                    aria-label={t('ui.group_tabs.accept')}
+                                                    onClick={() => resolveRequest(req.id, 'accept', req.name)}
+                                                    disabled={busyRequest !== null || isFull}
+                                                    className="w-[34px] h-[34px] rounded-full bg-emerald-500 text-black flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
+                                                >
+                                                    <UserCheck className="w-[17px] h-[17px]" />
+                                                </button>
+                                            </div>
                                         </Row>
                                     ))}
                                 {outgoing.map((g, i) => (

@@ -19,6 +19,7 @@ client_scripts {
     'bridge/apps/manager.lua',
     'bridge/apps/kartik.lua',
     'bridge/apps/sd-phone.lua',
+    'bridge/apps/av-laptop.lua',
     'modules/group/client.lua',
     'modules/blips/client.lua',
     'modules/nui/client.lua',

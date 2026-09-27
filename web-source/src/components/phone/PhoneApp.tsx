@@ -29,6 +29,7 @@ const PhoneApp: React.FC = () => {
         handleCreateGroup,
         handleRequestToJoin,
         handleResolveJobOffer,
+        handleProcessRequest,
         handleUpdateGroup,
         handleDisbandOrLeave,
     } = useGroupsController();
@@ -91,6 +92,7 @@ const PhoneApp: React.FC = () => {
                                                 onOpenCreate={() => setCreateOpen(true)}
                                                 onRequestToJoin={handleRequestToJoin}
                                                 onResolveJobOffer={handleResolveJobOffer}
+                                                onProcessRequest={handleProcessRequest}
                                                 onGoDiscover={() => setTab('discover')}
                                             />
                                         </motion.div>

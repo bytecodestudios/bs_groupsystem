@@ -45,7 +45,7 @@ automatically based on what your server is running.
 
 **Interface**
 - Clean, responsive menu for finding and managing groups.
-- Built in support for the `kartik-laptop` app and the `sd-phone` phone app
+- Built in support for the `kartik-laptop` and `av_laptop` (via `av_apps`) laptop apps and the `sd-phone` phone app
   (also registered under `lb-phone`). Each integration lives in its own bridge
   adapter under `bridge/apps/`, so adding another host is self-contained.
 
@@ -74,6 +74,7 @@ All settings live in `config.lua`.
 | `Config.StartingPartyCooldown` | How long players must wait after the server starts before creating groups, in minutes. |
 | `Config.AllowLeavePartyDuringJob` | Whether members can leave or be kicked while a job is active. |
 | `Config.AppSettings` | Settings for the laptop app integration, such as `kartik-laptop`. |
+| `Config.LaptopApp` | Settings for the `av_laptop` app, registered through `av_apps`. |
 | `Config.PhoneApp` | Settings for the phone app integration (`sd-phone` / `lb-phone`): app name, icon, whether it is pre-installed, etc. |
 
 Discord logging is off by default. Add your webhook URL to the `webhook`

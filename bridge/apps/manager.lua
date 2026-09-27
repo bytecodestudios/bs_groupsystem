@@ -24,6 +24,13 @@ function Apps.hasSurface()
     return next(surfaces) ~= nil
 end
 
+--- Whether a specific surface adapter is registered.
+---@param name string
+---@return boolean
+function Apps.isRegistered(name)
+    return surfaces[name] ~= nil
+end
+
 --- Marks which surface is showing the UI so messages route to it.
 --- Pass nil on close to fall back to the standalone instance.
 ---@param name string|nil

@@ -8,14 +8,18 @@ import { useNuiEvent } from '../hooks/useNuiEvent';
 import { TaskWidget } from './misc/TaskWidget';
 import { useNotifications } from './misc/Notification';
 import { useLocale } from '../hooks/useLocale';
-import { isPhoneEnv } from '../utils/phone';
+import { isPhoneEnv, isLaptopEnv } from '../utils/phone';
 
 function App() {
   // Inside a phone the app is shown the moment its host opens it, and it has no
   // window chrome of its own (the phone frames it). Phone hosts may inject their
   // helpers slightly after first render, so also re-check on `componentsLoaded`.
   const [phoneMode, setPhoneMode] = useState(isPhoneEnv());
-  const [visible, setVisible] = useState(phoneMode);
+  // A laptop host (av_laptop, kartik-laptop) mounts this page only when the
+  // player opens the app, and av_laptop has no Lua open/close hook, so the app
+  // shows itself and reports its own lifecycle back to the client.
+  const [laptopMode] = useState(isLaptopEnv());
+  const [visible, setVisible] = useState(phoneMode || laptopMode);
   const [devAppMode, setDevAppMode] = useState(!(window as any).GetParentResourceName);
   const appMode = phoneMode || (import.meta.env.MODE === "development" ? devAppMode : !(window as any).GetParentResourceName);
   const { addNotification } = useNotifications();
@@ -31,6 +35,17 @@ function App() {
     window.addEventListener('message', onMessage);
     return () => window.removeEventListener('message', onMessage);
   }, []);
+
+  useEffect(() => {
+    if (!laptopMode) return;
+    fetchNui('bsgroup:nui:appOpened', {});
+    const onUnload = () => { fetchNui('bsgroup:nui:appClosed', {}); };
+    window.addEventListener('beforeunload', onUnload);
+    return () => {
+      window.removeEventListener('beforeunload', onUnload);
+      onUnload();
+    };
+  }, [laptopMode]);
 
   useNuiEvent('setVisible', (data: boolean) => {
     setVisible(data);

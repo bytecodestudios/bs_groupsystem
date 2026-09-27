@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Search, Plus, ChevronLeft, ChevronRight, LayoutDashboard, TrendingUp, CheckCircle2, ListTodo, Clock, Send, ShieldAlert, Briefcase } from 'lucide-react';
+import { Shield, Search, Plus, ChevronLeft, ChevronRight, LayoutDashboard, TrendingUp, CheckCircle2, ListTodo, Clock, Send, ShieldAlert, Briefcase, UserCheck, UserX } from 'lucide-react';
 import { Group } from '../../utils/types';
 import { MyGroupCard, PublicGroupCard } from './GroupCard';
 import { useLocale } from '../../hooks/useLocale';
@@ -16,10 +16,14 @@ export const DashboardView: React.FC<{
     onOpenCreateModal: () => void,
     onRequestToJoin: (groupId: string) => void,
     onResolveJobOffer: (accept: boolean) => void,
+    onProcessRequest: (groupId: string, requestId: string, action: 'accept' | 'decline', requestName: string) => void | Promise<void>,
     sentRequests: Set<string>,
     isVpnConnected: boolean
-}> = ({ myGroup, allGroups, isInGroup, onSelectGroup, onOpenCreateModal, onRequestToJoin, onResolveJobOffer, sentRequests, isVpnConnected }) => {
+}> = ({ myGroup, allGroups, isInGroup, onSelectGroup, onOpenCreateModal, onRequestToJoin, onResolveJobOffer, onProcessRequest, sentRequests, isVpnConnected }) => {
     const { t } = useLocale();
+    // Locks both buttons while the NUI round-trip is in flight so a leader
+    // can't double-accept the same applicant.
+    const [busyRequest, setBusyRequest] = useState<string | null>(null);
     
     // Derived Stats
     const tasksTotal = myGroup?.partyTasks.length || 0;
@@ -36,6 +40,18 @@ export const DashboardView: React.FC<{
     const pendingOutgoingRequests = useMemo(() => {
         return allGroups.filter(g => sentRequests.has(g.id));
     }, [allGroups, sentRequests]);
+
+    const isFull = !!myGroup && myGroup.members.length >= myGroup.maxMembers;
+
+    const resolveRequest = async (requestId: string, action: 'accept' | 'decline', requestName: string) => {
+        if (!myGroup || busyRequest) return;
+        setBusyRequest(requestId);
+        try {
+            await onProcessRequest(myGroup.id, requestId, action, requestName);
+        } finally {
+            setBusyRequest(null);
+        }
+    };
 
     return (
         <div className="h-full flex flex-col space-y-6 overflow-y-auto pr-2 pb-2">
@@ -124,7 +140,24 @@ export const DashboardView: React.FC<{
                                                                 </div>
                                                                 <span className="text-sm font-medium">{req.name}</span>
                                                             </div>
-                                                            <div className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_5px_theme(colors.amber.400)]"></div>
+                                                            <div className="flex items-center space-x-1.5">
+                                                                <button
+                                                                    title={t('ui.group_tabs.decline')}
+                                                                    onClick={() => resolveRequest(req.id, 'decline', req.name)}
+                                                                    disabled={busyRequest !== null}
+                                                                    className="w-7 h-7 rounded-md bg-red-500/15 text-red-300 hover:bg-red-500/25 flex items-center justify-center transition-colors disabled:opacity-40"
+                                                                >
+                                                                    <UserX className="w-3.5 h-3.5" />
+                                                                </button>
+                                                                <button
+                                                                    title={t('ui.group_tabs.accept')}
+                                                                    onClick={() => resolveRequest(req.id, 'accept', req.name)}
+                                                                    disabled={busyRequest !== null || isFull}
+                                                                    className="w-7 h-7 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center transition-colors disabled:opacity-40"
+                                                                >
+                                                                    <UserCheck className="w-3.5 h-3.5" />
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     ))}
                                                 </div>

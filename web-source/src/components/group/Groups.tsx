@@ -134,6 +134,7 @@ const Groups = () => {
         handleCreateGroup,
         handleRequestToJoin,
         handleResolveJobOffer,
+        handleProcessRequest,
         handleUpdateGroup,
         handleDisbandOrLeave,
     } = useGroupsController();
@@ -206,6 +207,7 @@ const Groups = () => {
                                             onOpenCreateModal={() => setCreateModalOpen(true)}
                                             onRequestToJoin={handleRequestToJoin}
                                             onResolveJobOffer={handleResolveJobOffer}
+                                            onProcessRequest={handleProcessRequest}
                                             sentRequests={sentRequests}
                                             isVpnConnected={isVpnConnected}
                                         />

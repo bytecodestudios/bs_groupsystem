@@ -34,6 +34,10 @@ end
 
 RegisterNetEvent('bs_groupsystem:client:updatePhoneData', function(data)
     if not data or data.app ~= 'party' then return end
+    -- The push is built server-side for every member at once, so the per-player
+    -- VPN visibility has to be stamped on here or the UI filters illegal groups
+    -- out of every live refresh.
+    data.canSeeIllegalParties = CanSeeIllegalParties()
     -- Party refreshes drive both the app surface and the always-on task HUD.
     Apps.sendData({ action = data.action, data = data })
 end)

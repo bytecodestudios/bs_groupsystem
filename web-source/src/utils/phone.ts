@@ -4,3 +4,14 @@
 export const isPhoneEnv = (): boolean =>
   typeof (window as any).fetchNui === "function" &&
   typeof (window as any).useNuiEvent === "function";
+
+// Detects a laptop host (av_laptop via av_apps, kartik-laptop): the app page is
+// mounted in the host's iframe and the host injects no helpers of its own.
+export const isLaptopEnv = (): boolean => {
+  try {
+    return window.parent !== window && !isPhoneEnv();
+  } catch {
+    // Cross-origin parent access throws, which only happens when framed.
+    return !isPhoneEnv();
+  }
+};
